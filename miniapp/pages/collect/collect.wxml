@@ -1,0 +1,54 @@
+<view class="page-container">
+  <!-- 连接状态 -->
+  <view class="status-bar {{wsConnected ? 'connected' : 'disconnected'}}">
+    <view class="status-dot"></view>
+    <text>{{wsConnected ? '已连接服务器' : '未连接服务器'}}</text>
+    <text class="status-hint" wx:if="{{!wsConnected}}">请先在首页连接</text>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="section-title">
+    <text class="title-icon">🛠️</text>
+    <text>采集工具</text>
+  </view>
+  
+  <view class="feature-grid">
+    <view 
+      class="feature-card {{item.id}}"
+      wx:for="{{features}}" 
+      wx:key="id"
+      data-url="{{item.url}}"
+      data-is-tab="{{item.isTab}}"
+      bindtap="navigateTo"
+    >
+      <view class="feature-icon">{{item.icon}}</view>
+      <view class="feature-info">
+        <text class="feature-title">{{item.title}}</text>
+        <text class="feature-desc">{{item.desc}}</text>
+      </view>
+      <view class="feature-arrow">›</view>
+    </view>
+  </view>
+
+  <!-- 使用说明 -->
+  <view class="tips-section">
+    <view class="section-title">
+      <text class="title-icon">💡</text>
+      <text>使用说明</text>
+    </view>
+    <view class="tips-content">
+      <view class="tip-item">
+        <text class="tip-num">1</text>
+        <text class="tip-text">扫码录入：扫描商品条码，发送到收银台</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-num">2</text>
+        <text class="tip-text">AI识别：拍照识别商品，无需条码</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-num">3</text>
+        <text class="tip-text">AI样本：上传商品图片，提升识别准确率</text>
+      </view>
+    </view>
+  </view>
+</view>

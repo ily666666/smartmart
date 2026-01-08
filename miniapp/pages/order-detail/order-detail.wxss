@@ -1,0 +1,260 @@
+.page-container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 加载状态 */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400rpx;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #9ca3af;
+}
+
+/* 状态卡片 */
+.status-card {
+  display: flex;
+  align-items: center;
+  padding: 40rpx 32rpx;
+  margin: 24rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.status-card.completed {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.status-card.pending {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.status-card.cancelled {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.status-icon {
+  font-size: 64rpx;
+  margin-right: 24rpx;
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-text {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.status-card .order-no {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 8rpx;
+}
+
+/* 金额卡片 */
+.amount-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx;
+  margin: 0 24rpx 24rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.amount-label {
+  font-size: 26rpx;
+  color: #6b7280;
+  margin-bottom: 12rpx;
+}
+
+.amount-value {
+  font-size: 64rpx;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+/* 区块 */
+.section {
+  margin: 0 24rpx 24rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 2rpx solid #f3f4f6;
+}
+
+/* 商品明细 */
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.item-row:last-child {
+  border-bottom: none;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-name {
+  font-size: 28rpx;
+  color: #1f2937;
+  margin-bottom: 6rpx;
+}
+
+.item-price {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+.item-subtotal {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.no-items {
+  text-align: center;
+  padding: 32rpx;
+  color: #9ca3af;
+  font-size: 28rpx;
+}
+
+/* 订单信息 */
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+}
+
+.info-label {
+  font-size: 28rpx;
+  color: #6b7280;
+}
+
+.info-value {
+  font-size: 28rpx;
+  color: #1f2937;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48rpx;
+  padding: 0 24rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  border-radius: 24rpx;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-badge.completed {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #047857;
+}
+
+.status-badge.pending {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #b45309;
+}
+
+.status-badge.cancelled {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  color: #6b7280;
+}
+
+/* 操作按钮 */
+.action-buttons {
+  display: flex;
+  gap: 20rpx;
+  padding: 32rpx 24rpx;
+}
+
+.btn {
+  flex: 1;
+  padding: 28rpx 0;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+}
+
+.btn::after {
+  border: none;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+}
+
+.btn:active {
+  opacity: 0.8;
+}
+
+/* 操作提示 */
+.action-tips {
+  padding: 0 24rpx 32rpx;
+}
+
+.tip-item {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.tip-icon {
+  font-size: 28rpx;
+}
+
+.tip-text {
+  font-size: 24rpx;
+  color: #6b7280;
+}

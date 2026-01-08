@@ -1,0 +1,103 @@
+<!--pages/scan/scan.wxml-->
+<view class="container">
+  <!-- 状态栏 -->
+  <view class="status-bar">
+    <view class="status-item">
+      <view class="status-dot {{wsConnected ? 'connected' : 'disconnected'}}"></view>
+      <text>{{wsConnected ? '已连接' : '未连接'}}</text>
+    </view>
+    <text class="scan-count">已扫描: {{scanCount}}</text>
+  </view>
+
+  <!-- 主卡片（整合相机和操作栏） -->
+  <view class="main-card">
+    <!-- 相机区域 -->
+    <view class="camera-container">
+      <camera 
+        wx:if="{{cameraReady && wsConnected}}"
+        class="camera"
+        mode="scanCode"
+        resolution="medium"
+        flash="{{flashMode}}"
+        bindscancode="onScanCode"
+        binderror="onCameraError"
+      >
+        <!-- 扫描框 -->
+        <cover-view class="scan-overlay">
+          <cover-view class="scan-frame">
+            <cover-view class="corner corner-tl"></cover-view>
+            <cover-view class="corner corner-tr"></cover-view>
+            <cover-view class="corner corner-bl"></cover-view>
+            <cover-view class="corner corner-br"></cover-view>
+            <cover-view class="scan-line"></cover-view>
+          </cover-view>
+          <cover-view class="scan-tip">将条码放入框内自动扫描</cover-view>
+        </cover-view>
+      </camera>
+      
+      <!-- 未连接提示 -->
+      <view class="camera-placeholder" wx:if="{{!wsConnected}}">
+        <text class="placeholder-icon">🔌</text>
+        <text class="placeholder-text">请先连接服务器</text>
+        <button class="btn-connect" bindtap="goHome">去连接</button>
+      </view>
+      
+      <!-- 相机加载中 -->
+      <view class="camera-placeholder" wx:if="{{wsConnected && !cameraReady}}">
+        <text class="placeholder-icon">📷</text>
+        <text class="placeholder-text">相机加载中...</text>
+      </view>
+    </view>
+
+    <!-- 底部操作栏（整合在卡片内） -->
+    <view class="action-bar">
+      <view class="action-item" bindtap="toggleFlash">
+        <text class="action-icon">{{flashMode === 'on' ? '🔦' : '💡'}}</text>
+        <text class="action-text">{{flashMode === 'on' ? '关闭' : '闪光灯'}}</text>
+      </view>
+      <view class="action-item" bindtap="manualScan">
+        <text class="action-icon">📱</text>
+        <text class="action-text">系统扫码</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 扫描历史卡片 -->
+  <view class="history-section" wx:if="{{scanHistory.length}}">
+    <view class="history-header">
+      <text class="history-title">扫描记录</text>
+      <text class="history-clear" bindtap="clearHistory">清空</text>
+    </view>
+    <scroll-view class="history-list" scroll-y>
+      <view 
+        class="history-item {{item.success ? 'success' : 'failed'}}"
+        wx:for="{{scanHistory}}"
+        wx:key="id"
+      >
+        <view class="history-icon">{{item.success ? '✅' : '❌'}}</view>
+        <view class="history-info">
+          <text class="history-name">{{item.name || item.code}}</text>
+          <text class="history-code" wx:if="{{item.name}}">{{item.code}}</text>
+        </view>
+        <view class="history-right">
+          <text class="history-price" wx:if="{{item.price}}">¥{{item.price}}</text>
+          <text class="history-time">{{item.time}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 底部切换栏 -->
+  <view class="mode-switch-bar">
+    <view class="mode-switch-inner">
+      <view class="mode-btn active">
+        <text class="mode-icon">🔍</text>
+        <text class="mode-text">扫码录入</text>
+      </view>
+      <view class="mode-btn" bindtap="switchToVision">
+        <text class="mode-icon">👁️</text>
+        <text class="mode-text">AI识别</text>
+      </view>
+    </view>
+  </view>
+</view>

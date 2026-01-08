@@ -1,0 +1,263 @@
+<view class="page-container">
+  <!-- Tab 切换 -->
+  <view class="tab-bar">
+    <view 
+      class="tab-item {{activeTab === 'daily' ? 'active' : ''}}"
+      data-tab="daily"
+      bindtap="switchTab"
+    >
+      <text class="tab-icon">📊</text>
+      <text class="tab-text">今日营业</text>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'top' ? 'active' : ''}}"
+      data-tab="top"
+      bindtap="switchTab"
+    >
+      <text class="tab-icon">🔥</text>
+      <text class="tab-text">畅销排行</text>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'slow' ? 'active' : ''}}"
+      data-tab="slow"
+      bindtap="switchTab"
+    >
+      <text class="tab-icon">⚠️</text>
+      <text class="tab-text">滞销预警</text>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'profit' ? 'active' : ''}}"
+      data-tab="profit"
+      bindtap="switchTab"
+    >
+      <text class="tab-icon">💰</text>
+      <text class="tab-text">盈利分析</text>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 今日营业 -->
+  <view class="tab-content" wx:if="{{activeTab === 'daily' && !loading}}">
+    <!-- 日期选择 -->
+    <view class="date-selector">
+      <view class="quick-dates">
+        <view 
+          class="quick-btn {{selectedDate === '' ? 'active' : ''}}"
+          data-offset="0"
+          bindtap="setQuickDate"
+        >今天</view>
+        <view 
+          class="quick-btn"
+          data-offset="1"
+          bindtap="setQuickDate"
+        >昨天</view>
+        <view 
+          class="quick-btn"
+          data-offset="2"
+          bindtap="setQuickDate"
+        >前天</view>
+      </view>
+      <picker mode="date" value="{{selectedDate}}" bindchange="onDateChange">
+        <view class="date-picker-btn">📅 {{selectedDate}}</view>
+      </picker>
+    </view>
+
+    <block wx:if="{{dailyReport}}">
+      <!-- 核心数据 -->
+      <view class="main-stat-card">
+        <text class="main-stat-label">今日收入</text>
+        <text class="main-stat-value">¥{{dailyReport.total_revenue}}</text>
+      </view>
+
+      <view class="stat-grid">
+        <view class="stat-card">
+          <text class="stat-icon">🧾</text>
+          <text class="stat-value">{{dailyReport.order_count}}</text>
+          <text class="stat-label">订单数</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-icon">📦</text>
+          <text class="stat-value">{{dailyReport.item_count}}</text>
+          <text class="stat-label">售出件数</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-icon">👤</text>
+          <text class="stat-value">¥{{dailyReport.avg_order_value}}</text>
+          <text class="stat-label">客单价</text>
+        </view>
+      </view>
+
+      <!-- 今日热销 -->
+      <view class="section" wx:if="{{dailyReport.top_products && dailyReport.top_products.length > 0}}">
+        <view class="section-title">🔥 今日热销</view>
+        <view class="rank-list">
+          <view class="rank-item" wx:for="{{dailyReport.top_products}}" wx:key="sku_id" wx:if="{{index < 5}}">
+            <view class="rank-badge rank-{{index + 1}}">{{index + 1}}</view>
+            <text class="rank-name">{{item.name}}</text>
+            <view class="rank-stats">
+              <text class="rank-qty">{{item.quantity}}件</text>
+              <text class="rank-rev">¥{{item.revenue}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 畅销排行 -->
+  <view class="tab-content" wx:if="{{activeTab === 'top' && !loading}}">
+    <view class="time-selector">
+      <view 
+        class="time-btn {{days === 7 ? 'active' : ''}}"
+        data-days="7"
+        bindtap="setDays"
+      >近7天</view>
+      <view 
+        class="time-btn {{days === 15 ? 'active' : ''}}"
+        data-days="15"
+        bindtap="setDays"
+      >近15天</view>
+      <view 
+        class="time-btn {{days === 30 ? 'active' : ''}}"
+        data-days="30"
+        bindtap="setDays"
+      >近30天</view>
+    </view>
+
+    <view class="product-rank-list" wx:if="{{topProducts.length > 0}}">
+      <view class="product-rank-item {{index < 3 ? 'top3' : ''}}" wx:for="{{topProducts}}" wx:key="sku_id">
+        <view class="rank-medal">
+          <text wx:if="{{index === 0}}">🥇</text>
+          <text wx:elif="{{index === 1}}">🥈</text>
+          <text wx:elif="{{index === 2}}">🥉</text>
+          <text wx:else class="rank-num">{{index + 1}}</text>
+        </view>
+        <view class="product-info">
+          <text class="product-name">{{item.name}}</text>
+          <text class="product-stock">库存 {{item.current_stock}} 件</text>
+        </view>
+        <view class="product-stats">
+          <text class="sold-qty">卖了 {{item.quantity}} 件</text>
+          <text class="sold-rev">¥{{item.revenue}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <text class="empty-icon">📭</text>
+      <text class="empty-text">暂无数据</text>
+    </view>
+  </view>
+
+  <!-- 滞销预警 -->
+  <view class="tab-content" wx:if="{{activeTab === 'slow' && !loading}}">
+    <view class="time-selector">
+      <view 
+        class="time-btn {{days === 7 ? 'active' : ''}}"
+        data-days="7"
+        bindtap="setDays"
+      >近7天</view>
+      <view 
+        class="time-btn {{days === 15 ? 'active' : ''}}"
+        data-days="15"
+        bindtap="setDays"
+      >近15天</view>
+      <view 
+        class="time-btn {{days === 30 ? 'active' : ''}}"
+        data-days="30"
+        bindtap="setDays"
+      >近30天</view>
+    </view>
+
+    <view class="slow-list" wx:if="{{slowMovers.length > 0}}">
+      <view class="warning-banner">
+        ⚠️ 以下 {{slowMovers.length}} 个商品卖得很慢
+      </view>
+      <view class="slow-item" wx:for="{{slowMovers}}" wx:key="sku_id">
+        <text class="slow-name">{{item.name}}</text>
+        <view class="slow-stats">
+          <view class="slow-row">
+            <text class="slow-label">还剩</text>
+            <text class="slow-value stock">{{item.current_stock}} 件</text>
+          </view>
+          <view class="slow-row">
+            <text class="slow-label">{{days}}天只卖了</text>
+            <text class="slow-value sold">{{item.quantity_sold}} 件</text>
+          </view>
+          <view class="slow-row">
+            <text class="slow-label">按现在速度还要</text>
+            <text class="slow-value days {{item.days_of_stock > 90 ? 'danger' : ''}}">
+              {{item.days_of_stock > 999 ? '很久很久' : item.days_of_stock + '天'}}
+            </text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="good-state" wx:else>
+      <text class="good-icon">✅</text>
+      <text class="good-text">太棒了！没有滞销商品</text>
+    </view>
+  </view>
+
+  <!-- 盈利分析 -->
+  <view class="tab-content" wx:if="{{activeTab === 'profit' && !loading}}">
+    <view class="time-selector">
+      <view 
+        class="time-btn {{days === 7 ? 'active' : ''}}"
+        data-days="7"
+        bindtap="setDays"
+      >近7天</view>
+      <view 
+        class="time-btn {{days === 15 ? 'active' : ''}}"
+        data-days="15"
+        bindtap="setDays"
+      >近15天</view>
+      <view 
+        class="time-btn {{days === 30 ? 'active' : ''}}"
+        data-days="30"
+        bindtap="setDays"
+      >近30天</view>
+    </view>
+
+    <block wx:if="{{profitReport}}">
+      <view class="profit-cards">
+        <view class="profit-card revenue">
+          <text class="profit-icon">💰</text>
+          <text class="profit-value">¥{{profitReport.total_revenue}}</text>
+          <text class="profit-label">总销售额</text>
+        </view>
+        <view class="profit-card cost">
+          <text class="profit-icon">💵</text>
+          <text class="profit-value">¥{{profitReport.total_cost}}</text>
+          <text class="profit-label">总成本</text>
+        </view>
+        <view class="profit-card profit">
+          <text class="profit-icon">📈</text>
+          <text class="profit-value {{profitReport.total_profit >= 0 ? 'positive' : 'negative'}}">
+            ¥{{profitReport.total_profit}}
+          </text>
+          <text class="profit-label">总利润</text>
+        </view>
+        <view class="profit-card margin">
+          <text class="profit-icon">📊</text>
+          <text class="profit-value">{{profitReport.profit_margin}}%</text>
+          <text class="profit-label">利润率</text>
+        </view>
+      </view>
+
+      <view class="info-tip" wx:if="{{profitReport.products_without_cost > 0}}">
+        ⚠️ 有 {{profitReport.products_without_cost}} 个商品未设置进价，已排除在统计之外
+      </view>
+    </block>
+
+    <view class="empty-state" wx:else>
+      <text class="empty-icon">📭</text>
+      <text class="empty-text">暂无数据</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,73 @@
+<view class="tab-bar">
+  <view 
+    wx:for="{{list}}" 
+    wx:key="index" 
+    class="tab-bar-item {{selected === index ? 'active' : ''}}" 
+    data-path="{{item.pagePath}}"
+    data-index="{{index}}"
+    bindtap="switchTab"
+  >
+    <!-- 首页图标 -->
+    <view class="icon icon-home" wx:if="{{item.icon === 'home'}}">
+      <view class="house-roof"></view>
+      <view class="house-body">
+        <view class="house-door"></view>
+      </view>
+    </view>
+    
+    <!-- 商品图标 -->
+    <view class="icon icon-product" wx:if="{{item.icon === 'product'}}">
+      <view class="box-top"></view>
+      <view class="box-body">
+        <view class="box-line"></view>
+      </view>
+    </view>
+    
+    <!-- 采集图标 -->
+    <view class="icon icon-collect" wx:if="{{item.icon === 'collect'}}">
+      <view class="camera-body">
+        <view class="camera-lens"></view>
+        <view class="camera-flash"></view>
+      </view>
+    </view>
+    
+    <!-- 订单图标 -->
+    <view class="icon icon-order" wx:if="{{item.icon === 'order'}}">
+      <view class="clipboard">
+        <view class="clip-top"></view>
+        <view class="clip-line"></view>
+        <view class="clip-line"></view>
+        <view class="clip-line short"></view>
+      </view>
+    </view>
+    
+    <!-- 数据图标 -->
+    <view class="icon icon-data" wx:if="{{item.icon === 'data'}}">
+      <view class="chart-container">
+        <view class="chart-bar bar1"></view>
+        <view class="chart-bar bar2"></view>
+        <view class="chart-bar bar3"></view>
+      </view>
+    </view>
+    
+    <!-- 扫码图标（保留兼容） -->
+    <view class="icon icon-scan" wx:if="{{item.icon === 'scan'}}">
+      <view class="scan-frame">
+        <view class="corner tl"></view>
+        <view class="corner tr"></view>
+        <view class="corner bl"></view>
+        <view class="corner br"></view>
+        <view class="scan-line"></view>
+      </view>
+    </view>
+    
+    <!-- 识别图标（保留兼容） -->
+    <view class="icon icon-eye" wx:if="{{item.icon === 'eye'}}">
+      <view class="eye-outer">
+        <view class="eye-inner"></view>
+      </view>
+    </view>
+    
+    <text class="tab-text">{{item.text}}</text>
+  </view>
+</view>

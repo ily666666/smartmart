@@ -1,0 +1,57 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/products/products",
+    "pages/product-detail/product-detail",
+    "pages/collect/collect",
+    "pages/scan/scan",
+    "pages/vision/vision",
+    "pages/samples/samples",
+    "pages/orders/orders",
+    "pages/order-detail/order-detail",
+    "pages/data/data",
+    "pages/reports/reports",
+    "pages/analysis/analysis"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#4f46e5",
+    "navigationBarTitleText": "店小蜜",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999",
+    "selectedColor": "#4f46e5",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/products/products",
+        "text": "商品"
+      },
+      {
+        "pagePath": "pages/collect/collect",
+        "text": "采集"
+      },
+      {
+        "pagePath": "pages/orders/orders",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/data/data",
+        "text": "数据"
+      }
+    ]
+  },
+  "permission": {
+    "scope.camera": {
+      "desc": "用于扫码识别商品"
+    }
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

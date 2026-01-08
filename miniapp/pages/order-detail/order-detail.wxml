@@ -1,0 +1,93 @@
+<view class="page-container">
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <block wx:elif="{{order}}">
+    <!-- 订单状态卡片 -->
+    <view class="status-card {{order.status}}">
+      <view class="status-icon">
+        <text wx:if="{{order.status === 'completed'}}">✅</text>
+        <text wx:elif="{{order.status === 'cancelled'}}">❌</text>
+        <text wx:else>⏳</text>
+      </view>
+      <view class="status-info">
+        <text class="status-text">
+          {{order.status === 'completed' ? '订单已完成' : order.status === 'cancelled' ? '订单已取消' : '订单待处理'}}
+        </text>
+        <text class="order-no">{{order.order_no}}</text>
+      </view>
+    </view>
+
+    <!-- 订单金额 -->
+    <view class="amount-card">
+      <view class="amount-label">订单金额</view>
+      <view class="amount-value">¥{{order.total_amount}}</view>
+    </view>
+
+    <!-- 商品明细 -->
+    <view class="section">
+      <view class="section-title">📦 商品明细</view>
+      <view class="items-list" wx:if="{{order.items && order.items.length > 0}}">
+        <view class="item-row" wx:for="{{order.items}}" wx:key="index">
+          <view class="item-info">
+            <text class="item-name">{{item.product_name}}</text>
+            <text class="item-price">¥{{item.unit_price}} × {{item.quantity}}</text>
+          </view>
+          <text class="item-subtotal">¥{{item.subtotal}}</text>
+        </view>
+      </view>
+      <view class="no-items" wx:else>
+        <text>暂无商品明细</text>
+      </view>
+    </view>
+
+    <!-- 订单信息 -->
+    <view class="section">
+      <view class="section-title">📋 订单信息</view>
+      <view class="info-list">
+        <view class="info-row">
+          <text class="info-label">订单号</text>
+          <text class="info-value">{{order.order_no}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">收银员</text>
+          <text class="info-value">{{order.cashier}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">下单时间</text>
+          <text class="info-value">{{order.created_at}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">订单状态</text>
+          <view class="status-badge {{order.status}}">
+            {{order.status === 'completed' ? '已完成' : order.status === 'cancelled' ? '已取消' : '待处理'}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-buttons">
+      <button class="btn btn-warning" bindtap="revokeOrder">
+        ↩️ 撤销订单
+      </button>
+      <button class="btn btn-danger" bindtap="deleteOrder">
+        🗑️ 删除订单
+      </button>
+    </view>
+
+    <!-- 操作提示 -->
+    <view class="action-tips">
+      <view class="tip-item">
+        <text class="tip-icon">💡</text>
+        <text class="tip-text">撤销订单：恢复商品库存</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-icon">⚠️</text>
+        <text class="tip-text">删除订单：不恢复库存，数据不可恢复</text>
+      </view>
+    </view>
+  </block>
+</view>

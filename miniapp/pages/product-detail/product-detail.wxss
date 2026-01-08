@@ -1,0 +1,269 @@
+.page-container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 加载状态 */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400rpx;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #9ca3af;
+}
+
+/* ========== 查看模式 ========== */
+
+/* 商品图片区域 */
+.product-image-section {
+  width: 100%;
+  height: 400rpx;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+}
+
+.no-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-image-icon {
+  font-size: 100rpx;
+  margin-bottom: 16rpx;
+}
+
+.no-image-text {
+  font-size: 28rpx;
+  color: #9ca3af;
+}
+
+.image-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 28rpx;
+  color: #9ca3af;
+  background: #f3f4f6;
+}
+
+/* 信息卡片 */
+.info-card {
+  margin: 24rpx;
+  padding: 32rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.product-name {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 16rpx;
+}
+
+.product-category-tag {
+  display: inline-block;
+  padding: 8rpx 20rpx;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  color: #4f46e5;
+  font-size: 24rpx;
+  border-radius: 20rpx;
+  margin-bottom: 32rpx;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 28rpx;
+  color: #6b7280;
+}
+
+.info-value {
+  font-size: 28rpx;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.info-value.price {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.info-value.cost {
+  font-size: 28rpx;
+  color: #6b7280;
+}
+
+.info-value.stock.low {
+  color: #dc2626;
+}
+
+.price-row {
+  flex-wrap: wrap;
+}
+
+.price-item {
+  display: flex;
+  flex-direction: column;
+  margin-right: 48rpx;
+}
+
+.price-item .info-label {
+  margin-bottom: 8rpx;
+}
+
+/* ========== 编辑模式 ========== */
+
+.form-card {
+  margin: 24rpx;
+  padding: 24rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.form-item {
+  margin-bottom: 36rpx;
+}
+
+.form-item:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: block;
+  font-size: 28rpx;
+  color: #374151;
+  margin-bottom: 16rpx;
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 24rpx;
+  background: #f9fafb;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  line-height: 88rpx;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #4f46e5;
+  background: #ffffff;
+}
+
+.form-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.form-input-wrap .form-input {
+  flex: 1;
+  height: 88rpx;
+}
+
+.scan-btn-small {
+  width: 88rpx;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: 12rpx;
+  font-size: 36rpx;
+}
+
+.form-picker {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 88rpx;
+  padding: 0 24rpx;
+  background: #f9fafb;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  color: #1f2937;
+}
+
+.picker-arrow {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+/* ========== 操作按钮 ========== */
+
+.action-buttons {
+  display: flex;
+  gap: 24rpx;
+  padding: 32rpx 24rpx;
+}
+
+.btn {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  box-sizing: border-box;
+}
+
+.btn::after {
+  border: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+}
+
+.btn:active {
+  opacity: 0.8;
+}

@@ -1,0 +1,52 @@
+/**app.wxss**/
+page {
+  background-color: #f5f5f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.container {
+  padding: 20rpx;
+  padding-bottom: 160rpx; /* 为自定义 tabBar 留出空间 */
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.btn-primary {
+  background-color: #4f46e5;
+  color: white;
+  border-radius: 8rpx;
+  padding: 24rpx;
+  text-align: center;
+  font-size: 32rpx;
+  margin: 20rpx 0;
+}
+
+.btn-success {
+  background-color: #10b981;
+  color: white;
+  border-radius: 8rpx;
+  padding: 24rpx;
+  text-align: center;
+  font-size: 32rpx;
+  margin: 20rpx 0;
+}
+
+.status-badge {
+  display: inline-block;
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  margin-right: 10rpx;
+}
+
+.status-connected {
+  background-color: #10b981;
+}
+
+.status-disconnected {
+  background-color: #ef4444;
+}
+
+

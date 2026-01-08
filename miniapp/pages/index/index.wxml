@@ -1,0 +1,181 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 顶部状态 -->
+  <view class="header">
+    <text class="title">店小蜜</text>
+    <view class="status">
+      <view class="status-badge {{wsConnected ? 'status-connected' : 'status-disconnected'}}"></view>
+      <text class="status-text">{{wsConnected ? '已连接' : '未连接'}}</text>
+    </view>
+  </view>
+
+  <!-- 未配置时：扫码连接 -->
+  <view class="connect-card" wx:if="{{!serverUrl && !wsConnected}}">
+    <view class="connect-icon">📱</view>
+    <text class="connect-title">扫码连接桌面端</text>
+    <text class="connect-desc">打开桌面客户端，扫描显示的二维码即可自动连接</text>
+    
+    <button class="btn-scan-connect" bindtap="scanToConnect">
+      <text class="scan-icon">📷</text>
+      <text>扫码连接</text>
+    </button>
+    
+    <view class="manual-toggle" bindtap="toggleManualInput">
+      <text>{{showManualInput ? '收起手动输入' : '手动输入地址'}}</text>
+      <text class="arrow">{{showManualInput ? '▲' : '▼'}}</text>
+    </view>
+  </view>
+
+  <!-- 手动输入（折叠） -->
+  <view class="manual-section" wx:if="{{showManualInput && !serverUrl}}">
+    <view class="card">
+      <view class="form-group">
+        <text class="label">服务器地址（IP:端口）</text>
+        <input 
+          class="input" 
+          type="text" 
+          value="{{inputServerUrl}}"
+          placeholder="例如：192.168.1.100:8000"
+          bindinput="onServerUrlInput"
+        />
+      </view>
+      
+      <view class="form-group">
+        <text class="label">配对 Token（从桌面端获取）</text>
+        <input 
+          class="input" 
+          type="text" 
+          value="{{inputToken}}"
+          placeholder="可选，首次配对需要"
+          bindinput="onTokenInput"
+        />
+      </view>
+      
+      <button class="btn-primary" bindtap="saveConfig">
+        保存并连接
+      </button>
+    </view>
+  </view>
+
+  <!-- 已配置时：连接状态卡片 -->
+  <view class="status-card" wx:if="{{serverUrl}}">
+    <view class="card">
+      <view class="server-info">
+        <view class="server-row">
+          <text class="server-label">服务器</text>
+          <text class="server-value">{{serverUrl}}</text>
+        </view>
+        <view class="server-row">
+          <text class="server-label">状态</text>
+          <view class="server-status">
+            <view class="status-dot {{wsConnected ? 'connected' : 'disconnected'}}"></view>
+            <text class="{{wsConnected ? 'text-success' : 'text-danger'}}">{{wsConnected ? '已连接' : (connecting ? '连接中...' : '未连接')}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 未连接时的操作 -->
+      <view class="server-actions" wx:if="{{!wsConnected}}">
+        <button 
+          class="btn-reconnect-primary" 
+          bindtap="connectWebSocket"
+          disabled="{{connecting}}"
+        >
+          {{connecting ? '连接中...' : '⚡ 快速重连'}}
+        </button>
+      </view>
+      
+      <view class="server-actions-secondary" wx:if="{{!wsConnected && !connecting}}">
+        <text class="action-link" bindtap="scanToConnect">🔄 重新扫码</text>
+        <text class="action-divider">|</text>
+        <text class="action-link" bindtap="toggleManualInput">✏️ 手动输入</text>
+        <text class="action-divider">|</text>
+        <text class="action-link" bindtap="clearSavedServer">清除记录</text>
+      </view>
+      
+      <!-- 手动输入（展开时显示） -->
+      <view class="manual-input-inline" wx:if="{{showManualInput && !wsConnected}}">
+        <view class="form-group">
+          <text class="label-small">服务器地址</text>
+          <input 
+            class="input" 
+            type="text" 
+            value="{{inputServerUrl}}"
+            placeholder="例如：192.168.1.100:8000"
+            bindinput="onServerUrlInput"
+          />
+        </view>
+        <view class="form-group">
+          <text class="label-small">配对 Token</text>
+          <input 
+            class="input" 
+            type="text" 
+            value="{{inputToken}}"
+            placeholder="可选，首次配对需要"
+            bindinput="onTokenInput"
+          />
+        </view>
+        <button class="btn-primary-small" bindtap="saveConfig">
+          保存并连接
+        </button>
+      </view>
+      
+      <!-- 已连接时的操作 -->
+      <view class="server-actions" wx:if="{{wsConnected}}">
+        <button 
+          class="btn-disconnect" 
+          bindtap="disconnectOnly"
+        >
+          断开连接
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 设备信息 -->
+  <view class="device-section">
+    <view class="card">
+      <text class="card-title">设备信息</text>
+      <view class="device-id">
+        <text class="device-id-text">{{deviceId}}</text>
+        <button class="btn-copy" size="mini" bindtap="copyDeviceId">复制</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速操作（已连接时显示） -->
+  <view class="action-section" wx:if="{{wsConnected}}">
+    <view class="action-grid">
+      <view class="action-item" bindtap="goToScan">
+        <view class="action-icon">🔍</view>
+        <text class="action-text">扫码录入</text>
+      </view>
+      <view class="action-item" bindtap="goToVision">
+        <view class="action-icon">👁️</view>
+        <text class="action-text">外观识别</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 使用说明 -->
+  <view class="help-section" wx:if="{{!serverUrl}}">
+    <view class="card">
+      <text class="card-title">💡 使用说明</text>
+      <view class="desc">
+        <text>1. 确保手机和电脑在同一 WiFi 网络</text>
+        <text>2. 打开桌面端 SmartMart 收银软件</text>
+        <text>3. 点击上方"扫码连接"按钮</text>
+        <text>4. 扫描桌面端显示的二维码</text>
+        <text>5. 连接成功后即可开始扫码</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 调试信息（可选） -->
+  <view class="debug-section" wx:if="{{lastMessage && false}}">
+    <view class="card">
+      <text class="card-title">调试信息</text>
+      <text class="code">{{lastMessage}}</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,108 @@
+<view class="page-container">
+  <!-- 连接状态 -->
+  <view class="status-bar {{wsConnected ? 'connected' : 'disconnected'}}">
+    <view class="status-dot"></view>
+    <text>{{wsConnected ? '已连接服务器' : '未连接服务器'}}</text>
+    <text class="status-hint" wx:if="{{!wsConnected}}">请先在首页连接</text>
+  </view>
+
+  <!-- 功能入口卡片 -->
+  <view class="feature-cards">
+    <view class="feature-card reports" bindtap="goToReports">
+      <view class="card-icon">📊</view>
+      <view class="card-info">
+        <text class="card-title">统计报表</text>
+        <text class="card-desc">营业数据分析</text>
+      </view>
+    </view>
+    <view class="feature-card analysis" bindtap="goToAnalysis">
+      <view class="card-icon">🤖</view>
+      <view class="card-info">
+        <text class="card-title">智能分析</text>
+        <text class="card-desc">智能经营决策</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 今日概览 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">📈 今日概览</text>
+    </view>
+    <view class="stats-grid" wx:if="{{wsConnected}}">
+      <view class="stat-card main">
+        <text class="stat-value">¥{{todayStats.revenue}}</text>
+        <text class="stat-label">今日收入</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-value">{{todayStats.orderCount}}</text>
+        <text class="stat-label">订单数</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-value">{{todayStats.itemCount}}</text>
+        <text class="stat-label">售出件数</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-value">¥{{todayStats.avgOrderValue}}</text>
+        <text class="stat-label">客单价</text>
+      </view>
+    </view>
+    <view class="empty-hint" wx:else>
+      <text>连接服务器后查看数据</text>
+    </view>
+  </view>
+
+  <!-- 智能提醒 -->
+  <view class="section" wx:if="{{alerts.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">⚠️ 智能提醒</text>
+    </view>
+    <view class="alerts-list">
+      <view 
+        class="alert-item {{item.type}}"
+        wx:for="{{alerts}}"
+        wx:key="type"
+        data-type="{{item.type}}"
+        bindtap="handleAlertTap"
+      >
+        <text class="alert-icon">{{item.icon}}</text>
+        <view class="alert-info">
+          <text class="alert-title">{{item.title}}</text>
+          <text class="alert-desc">{{item.desc}}</text>
+        </view>
+        <text class="alert-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态提示 -->
+  <view class="no-alerts" wx:if="{{wsConnected && alerts.length === 0 && !loading}}">
+    <text class="no-alerts-icon">✅</text>
+    <text class="no-alerts-text">一切正常，没有需要关注的事项</text>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">🚀 快捷入口</text>
+    </view>
+    <view class="quick-links">
+      <view class="quick-link" data-tab="daily" bindtap="goToReports">
+        <text class="link-icon">📅</text>
+        <text class="link-text">今日营业</text>
+      </view>
+      <view class="quick-link" data-tab="top" bindtap="goToReports">
+        <text class="link-icon">🔥</text>
+        <text class="link-text">畅销排行</text>
+      </view>
+      <view class="quick-link" data-tab="slow" bindtap="goToReports">
+        <text class="link-icon">⚠️</text>
+        <text class="link-text">滞销预警</text>
+      </view>
+      <view class="quick-link" data-tab="restock" bindtap="goToAnalysis">
+        <text class="link-icon">📦</text>
+        <text class="link-text">补货建议</text>
+      </view>
+    </view>
+  </view>
+</view>

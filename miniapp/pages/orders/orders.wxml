@@ -1,0 +1,107 @@
+<view class="page-container">
+  <!-- 筛选栏 -->
+  <view class="filter-section">
+    <!-- 快捷日期 -->
+    <view class="quick-dates">
+      <view 
+        class="quick-btn {{activeQuickDate === 1 ? 'active' : ''}}"
+        data-days="1"
+        bindtap="setQuickDate"
+      >今天</view>
+      <view 
+        class="quick-btn {{activeQuickDate === 7 ? 'active' : ''}}"
+        data-days="7"
+        bindtap="setQuickDate"
+      >近7天</view>
+      <view 
+        class="quick-btn {{activeQuickDate === 30 ? 'active' : ''}}"
+        data-days="30"
+        bindtap="setQuickDate"
+      >近30天</view>
+    </view>
+    
+    <!-- 自定义日期 -->
+    <view class="date-range">
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="date-picker">
+          <text>{{startDate || '开始日期'}}</text>
+        </view>
+      </picker>
+      <text class="date-separator">至</text>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="date-picker">
+          <text>{{endDate || '结束日期'}}</text>
+        </view>
+      </picker>
+      <view class="search-btn" bindtap="doSearch">查询</view>
+    </view>
+  </view>
+
+  <!-- 统计栏 -->
+  <view class="stats-bar" wx:if="{{totalCount > 0}}">
+    <view class="stat-item">
+      <text class="stat-label">共</text>
+      <text class="stat-value">{{totalCount}}</text>
+      <text class="stat-label">笔订单</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-label">总金额</text>
+      <text class="stat-value amount">¥{{totalAmount}}</text>
+    </view>
+  </view>
+
+  <!-- 订单列表 -->
+  <view class="order-list" wx:if="{{orders.length > 0}}">
+    <view 
+      class="order-item"
+      wx:for="{{orders}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="viewOrder"
+    >
+      <view class="order-header">
+        <text class="order-no">{{item.order_no}}</text>
+        <view class="order-status {{item.status}}">
+          {{item.status === 'completed' ? '已完成' : item.status === 'cancelled' ? '已取消' : '待处理'}}
+        </view>
+      </view>
+      
+      <view class="order-body">
+        <view class="order-info">
+          <text class="order-amount">¥{{item.total_amount}}</text>
+          <text class="order-meta">收银员: {{item.cashier}}</text>
+        </view>
+        <view class="order-time">
+          <text>{{item.created_at}}</text>
+        </view>
+      </view>
+      
+      <view class="order-arrow">›</view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && orders.length === 0 && wsConnected}}">
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">暂无订单记录</text>
+    <text class="empty-hint">调整日期范围重新查询</text>
+  </view>
+
+  <!-- 未连接状态 -->
+  <view class="empty-state" wx:if="{{!wsConnected}}">
+    <text class="empty-icon">🔌</text>
+    <text class="empty-text">未连接服务器</text>
+    <text class="empty-hint">请先在首页连接服务器</text>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-more" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 没有更多 -->
+  <view class="no-more" wx:if="{{!hasMore && orders.length > 0 && !loading}}">
+    <text>没有更多了</text>
+  </view>
+</view>

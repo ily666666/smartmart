@@ -1,0 +1,404 @@
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100rpx;
+  background: #ffffff;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -2rpx 20rpx rgba(0, 0, 0, 0.05);
+  border-top: 1rpx solid #f0f0f0;
+  z-index: 9999;
+}
+
+.tab-bar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.tab-bar-item.active {
+  transform: translateY(-4rpx);
+}
+
+.tab-text {
+  font-size: 20rpx;
+  color: #999999;
+  margin-top: 4rpx;
+  transition: color 0.2s ease;
+}
+
+.tab-bar-item.active .tab-text {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+/* 图标基础样式 */
+.icon {
+  width: 44rpx;
+  height: 44rpx;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========== 首页图标 ========== */
+.icon-home {
+  flex-direction: column;
+}
+
+.house-roof {
+  width: 0;
+  height: 0;
+  border-left: 22rpx solid transparent;
+  border-right: 22rpx solid transparent;
+  border-bottom: 16rpx solid #999999;
+  transition: border-color 0.2s ease;
+}
+
+.tab-bar-item.active .house-roof {
+  border-bottom-color: #4f46e5;
+}
+
+.house-body {
+  width: 32rpx;
+  height: 20rpx;
+  background: #999999;
+  border-radius: 0 0 4rpx 4rpx;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.tab-bar-item.active .house-body {
+  background: #4f46e5;
+}
+
+.house-door {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12rpx;
+  height: 14rpx;
+  background: #ffffff;
+  border-radius: 4rpx 4rpx 0 0;
+}
+
+/* ========== 商品图标（盒子） ========== */
+.icon-product {
+  flex-direction: column;
+}
+
+.box-top {
+  width: 36rpx;
+  height: 0;
+  border-left: 6rpx solid transparent;
+  border-right: 6rpx solid transparent;
+  border-bottom: 10rpx solid #999999;
+  transition: border-color 0.2s ease;
+}
+
+.tab-bar-item.active .box-top {
+  border-bottom-color: #4f46e5;
+}
+
+.box-body {
+  width: 36rpx;
+  height: 24rpx;
+  background: #999999;
+  border-radius: 0 0 4rpx 4rpx;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.tab-bar-item.active .box-body {
+  background: #4f46e5;
+}
+
+.box-line {
+  width: 2rpx;
+  height: 100%;
+  background: #ffffff;
+}
+
+/* ========== 采集图标（相机） ========== */
+.icon-collect {
+  flex-direction: column;
+}
+
+.camera-body {
+  width: 40rpx;
+  height: 30rpx;
+  background: #999999;
+  border-radius: 6rpx;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.tab-bar-item.active .camera-body {
+  background: #4f46e5;
+}
+
+.camera-lens {
+  width: 16rpx;
+  height: 16rpx;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+.camera-flash {
+  position: absolute;
+  top: 4rpx;
+  right: 6rpx;
+  width: 8rpx;
+  height: 4rpx;
+  background: #ffffff;
+  border-radius: 2rpx;
+}
+
+/* ========== 订单图标（剪贴板） ========== */
+.icon-order {
+  flex-direction: column;
+}
+
+.clipboard {
+  width: 32rpx;
+  height: 38rpx;
+  background: #999999;
+  border-radius: 4rpx;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10rpx;
+  transition: background 0.2s ease;
+}
+
+.tab-bar-item.active .clipboard {
+  background: #4f46e5;
+}
+
+.clip-top {
+  position: absolute;
+  top: -4rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16rpx;
+  height: 8rpx;
+  background: #999999;
+  border-radius: 2rpx;
+  border: 2rpx solid #ffffff;
+  transition: background 0.2s ease;
+}
+
+.tab-bar-item.active .clip-top {
+  background: #4f46e5;
+}
+
+.clip-line {
+  width: 20rpx;
+  height: 3rpx;
+  background: #ffffff;
+  margin-top: 4rpx;
+  border-radius: 2rpx;
+}
+
+.clip-line.short {
+  width: 12rpx;
+}
+
+/* ========== 数据图标（柱状图） ========== */
+.icon-data {
+  flex-direction: column;
+}
+
+.chart-container {
+  width: 36rpx;
+  height: 34rpx;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 3rpx solid #999999;
+  border-left: 3rpx solid #999999;
+  padding: 0 2rpx 0 4rpx;
+  transition: border-color 0.2s ease;
+}
+
+.tab-bar-item.active .chart-container {
+  border-color: #4f46e5;
+}
+
+.chart-bar {
+  width: 8rpx;
+  background: #999999;
+  border-radius: 2rpx 2rpx 0 0;
+  transition: background 0.2s ease, height 0.3s ease;
+}
+
+.tab-bar-item.active .chart-bar {
+  background: #4f46e5;
+}
+
+.bar1 {
+  height: 12rpx;
+}
+
+.bar2 {
+  height: 22rpx;
+}
+
+.bar3 {
+  height: 16rpx;
+}
+
+.tab-bar-item.active .bar1 {
+  animation: barGrow1 0.5s ease-out;
+}
+
+.tab-bar-item.active .bar2 {
+  animation: barGrow2 0.5s ease-out;
+}
+
+.tab-bar-item.active .bar3 {
+  animation: barGrow3 0.5s ease-out;
+}
+
+@keyframes barGrow1 {
+  0% { height: 0; }
+  100% { height: 12rpx; }
+}
+
+@keyframes barGrow2 {
+  0% { height: 0; }
+  100% { height: 22rpx; }
+}
+
+@keyframes barGrow3 {
+  0% { height: 0; }
+  100% { height: 16rpx; }
+}
+
+/* ========== 扫码图标（保留兼容） ========== */
+.scan-frame {
+  width: 36rpx;
+  height: 36rpx;
+  position: relative;
+}
+
+.corner {
+  position: absolute;
+  width: 8rpx;
+  height: 8rpx;
+  border-color: #999999;
+  border-style: solid;
+  transition: border-color 0.2s ease;
+}
+
+.tab-bar-item.active .corner {
+  border-color: #4f46e5;
+}
+
+.corner.tl {
+  top: 0;
+  left: 0;
+  border-width: 3rpx 0 0 3rpx;
+  border-radius: 4rpx 0 0 0;
+}
+
+.corner.tr {
+  top: 0;
+  right: 0;
+  border-width: 3rpx 3rpx 0 0;
+  border-radius: 0 4rpx 0 0;
+}
+
+.corner.bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 3rpx 3rpx;
+  border-radius: 0 0 0 4rpx;
+}
+
+.corner.br {
+  bottom: 0;
+  right: 0;
+  border-width: 0 3rpx 3rpx 0;
+  border-radius: 0 0 4rpx 0;
+}
+
+.scan-line {
+  position: absolute;
+  top: 50%;
+  left: 4rpx;
+  right: 4rpx;
+  height: 3rpx;
+  background: linear-gradient(90deg, transparent, #999999, transparent);
+  transition: background 0.2s ease;
+}
+
+.tab-bar-item.active .scan-line {
+  background: linear-gradient(90deg, transparent, #4f46e5, transparent);
+  animation: scanAnim 1.5s ease-in-out infinite;
+}
+
+@keyframes scanAnim {
+  0%, 100% {
+    transform: translateY(-10rpx);
+  }
+  50% {
+    transform: translateY(10rpx);
+  }
+}
+
+/* ========== 识别图标（眼睛，保留兼容） ========== */
+.eye-outer {
+  width: 40rpx;
+  height: 24rpx;
+  border: 3rpx solid #999999;
+  border-radius: 70% 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease;
+}
+
+.tab-bar-item.active .eye-outer {
+  border-color: #4f46e5;
+}
+
+.eye-inner {
+  width: 12rpx;
+  height: 12rpx;
+  background: #999999;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.tab-bar-item.active .eye-inner {
+  background: #4f46e5;
+  animation: eyePulse 1s ease-in-out infinite;
+}
+
+@keyframes eyePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}

@@ -1,0 +1,279 @@
+.page-container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+/* 搜索栏 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background: #ffffff;
+  gap: 16rpx;
+}
+
+.search-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #f3f4f6;
+  border-radius: 40rpx;
+  padding: 16rpx 24rpx;
+}
+
+.search-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+}
+
+.clear-btn {
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #9ca3af;
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 24rpx;
+}
+
+.scan-btn {
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: 50%;
+}
+
+.scan-icon {
+  font-size: 36rpx;
+}
+
+/* 分类筛选 */
+.category-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx 16rpx;
+  background: #ffffff;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #e5e7eb;
+}
+
+.category-item {
+  padding: 12rpx 28rpx;
+  background: #f3f4f6;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  color: #4b5563;
+  transition: all 0.3s ease;
+}
+
+.category-item.active {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #ffffff;
+}
+
+/* 统计栏 */
+.stats-bar {
+  padding: 16rpx 24rpx;
+  background: #ffffff;
+  border-bottom: 1rpx solid #e5e7eb;
+}
+
+.stats-text {
+  font-size: 26rpx;
+  color: #6b7280;
+}
+
+/* 商品列表 */
+.product-list {
+  padding: 16rpx;
+}
+
+.product-item {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.product-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+  background: #f3f4f6;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.product-image image {
+  width: 100%;
+  height: 100%;
+}
+
+.no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+}
+
+.image-loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #9ca3af;
+  background: #f3f4f6;
+}
+
+.product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.product-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-barcode {
+  font-size: 24rpx;
+  color: #9ca3af;
+  margin-bottom: 8rpx;
+}
+
+.product-meta {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.product-category {
+  font-size: 22rpx;
+  color: #4f46e5;
+  background: #eef2ff;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.product-stock {
+  font-size: 22rpx;
+  color: #059669;
+}
+
+.product-stock.low {
+  color: #dc2626;
+}
+
+.product-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.price-value {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.price-arrow {
+  font-size: 40rpx;
+  color: #d1d5db;
+  margin-top: 8rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 48rpx;
+}
+
+.empty-icon {
+  font-size: 100rpx;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #374151;
+  margin-bottom: 12rpx;
+}
+
+.empty-hint {
+  font-size: 26rpx;
+  color: #9ca3af;
+}
+
+/* 加载状态 */
+.loading-more {
+  padding: 32rpx;
+  text-align: center;
+}
+
+.loading-text {
+  font-size: 26rpx;
+  color: #9ca3af;
+}
+
+.no-more {
+  padding: 32rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #d1d5db;
+}
+
+/* 悬浮添加按钮 */
+.fab-btn {
+  position: fixed;
+  right: 32rpx;
+  bottom: calc(140rpx + env(safe-area-inset-bottom));
+  width: 112rpx;
+  height: 112rpx;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba(79, 70, 229, 0.4);
+  z-index: 100;
+}
+
+.fab-icon {
+  font-size: 56rpx;
+  color: #ffffff;
+  font-weight: 300;
+}
+
+.fab-btn:active {
+  transform: scale(0.92);
+}

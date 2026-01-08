@@ -1,0 +1,207 @@
+<view class="page-container">
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <block wx:else>
+    <!-- 统计卡片 -->
+    <view class="stats-row">
+      <view class="stat-card">
+        <text class="stat-icon">📦</text>
+        <text class="stat-value">{{stats.total}}</text>
+        <text class="stat-label">商品总数</text>
+      </view>
+      <view class="stat-card ready">
+        <text class="stat-icon">✅</text>
+        <text class="stat-value">{{stats.ready}}</text>
+        <text class="stat-label">已就绪</text>
+      </view>
+      <view class="stat-card partial">
+        <text class="stat-icon">⚠️</text>
+        <text class="stat-value">{{stats.partial}}</text>
+        <text class="stat-label">部分完成</text>
+      </view>
+      <view class="stat-card empty">
+        <text class="stat-icon">❌</text>
+        <text class="stat-value">{{stats.empty}}</text>
+        <text class="stat-label">待上传</text>
+      </view>
+    </view>
+
+    <!-- 索引状态 -->
+    <view class="index-section">
+      <view class="section-header">
+        <text class="section-title">🔍 索引状态</text>
+        <view 
+          class="build-btn {{buildProgress.status === 'building' ? 'building' : ''}}"
+          bindtap="buildIndex"
+        >
+          {{buildProgress.status === 'building' ? '⏳ 构建中...' : '🔨 重建索引'}}
+        </view>
+      </view>
+
+      <view class="index-info" wx:if="{{indexStatus}}">
+        <view class="info-item" wx:if="{{indexStatus.exists}}">
+          <text class="info-label">状态</text>
+          <text class="info-value success">✅ 已构建</text>
+        </view>
+        <view class="info-item" wx:if="{{indexStatus.exists}}">
+          <text class="info-label">商品数</text>
+          <text class="info-value">{{indexStatus.num_skus}}</text>
+        </view>
+        <view class="info-item" wx:if="{{indexStatus.exists}}">
+          <text class="info-label">向量数</text>
+          <text class="info-value">{{indexStatus.num_vectors}}</text>
+        </view>
+        <view class="info-item warning" wx:if="{{!indexStatus.exists}}">
+          <text class="info-value">⚠️ 索引未构建，请先上传图片后重建索引</text>
+        </view>
+      </view>
+
+      <!-- 构建进度 -->
+      <view class="build-progress" wx:if="{{buildProgress.status === 'building'}}">
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{buildProgress.progress}}%"></view>
+        </view>
+        <text class="progress-text">{{buildProgress.message}}</text>
+      </view>
+
+      <view class="build-result success" wx:if="{{buildProgress.status === 'completed'}}">
+        ✅ {{buildProgress.message}}
+      </view>
+
+      <view class="build-result error" wx:if="{{buildProgress.status === 'failed'}}">
+        ❌ {{buildProgress.message}}
+      </view>
+    </view>
+
+    <!-- 搜索和筛选 -->
+    <view class="filter-section">
+      <view class="search-bar">
+        <text class="search-icon">🔍</text>
+        <input 
+          class="search-input"
+          placeholder="搜索商品名称或条码"
+          value="{{searchText}}"
+          bindinput="onSearchInput"
+        />
+      </view>
+      <view class="status-filters">
+        <view 
+          class="filter-btn {{statusFilter === 'all' ? 'active' : ''}}"
+          data-filter="all"
+          bindtap="setStatusFilter"
+        >全部</view>
+        <view 
+          class="filter-btn {{statusFilter === 'ready' ? 'active' : ''}}"
+          data-filter="ready"
+          bindtap="setStatusFilter"
+        >✅ 就绪</view>
+        <view 
+          class="filter-btn {{statusFilter === 'partial' ? 'active' : ''}}"
+          data-filter="partial"
+          bindtap="setStatusFilter"
+        >⚠️ 部分</view>
+        <view 
+          class="filter-btn {{statusFilter === 'empty' ? 'active' : ''}}"
+          data-filter="empty"
+          bindtap="setStatusFilter"
+        >❌ 待传</view>
+      </view>
+    </view>
+
+    <!-- 商品列表 -->
+    <view class="samples-list">
+      <view 
+        class="sample-card {{item.status}} {{expandedId === item.sku_id ? 'expanded' : ''}}"
+        wx:for="{{samples}}"
+        wx:key="sku_id"
+        wx:if="{{(statusFilter === 'all' || item.status === statusFilter) && (!searchText || item.name.toLowerCase().indexOf(searchText.toLowerCase()) > -1 || item.barcode.indexOf(searchText) > -1)}}"
+      >
+        <!-- 商品信息行 -->
+        <view class="sample-item" data-id="{{item.sku_id}}" bindtap="toggleExpand">
+          <view class="sample-status">
+            <text wx:if="{{item.status === 'ready'}}">✅</text>
+            <text wx:elif="{{item.status === 'partial'}}">⚠️</text>
+            <text wx:else>❌</text>
+          </view>
+          <view class="sample-info">
+            <text class="sample-name">{{item.name}}</text>
+            <text class="sample-barcode">{{item.barcode}}</text>
+            <text class="sample-count">{{item.image_count}} 张图片 {{expandedId === item.sku_id ? '▲' : '▼'}}</text>
+          </view>
+          <view 
+            class="upload-btn"
+            data-id="{{item.sku_id}}"
+            catchtap="quickUpload"
+          >
+            📤 上传
+          </view>
+        </view>
+
+        <!-- 图片预览区域 -->
+        <view class="images-section" wx:if="{{expandedId === item.sku_id}}">
+          <view class="images-grid" wx:if="{{item.images && item.images.length > 0}}">
+            <view 
+              class="image-item" 
+              wx:for="{{item.images}}" 
+              wx:for-item="img" 
+              wx:for-index="imgIdx"
+              wx:key="imgIdx"
+            >
+              <!-- 优先使用 base64， 显示图片 -->
+              <image 
+                class="sample-image"
+                src="{{item.imagesBase64[img] || (apiUrl + '/api/samples/samples/' + item.sku_id + '/images/' + img)}}"
+                mode="aspectFill"
+                data-sku="{{item.sku_id}}"
+                data-images="{{item.images}}"
+                data-index="{{imgIdx}}"
+                bindtap="previewImage"
+              />
+              <view 
+                class="delete-image-btn"
+                data-sku="{{item.sku_id}}"
+                data-filename="{{img}}"
+                catchtap="deleteImage"
+              >×</view>
+              <!-- 加载中提示 -->
+              <view class="image-loading" wx:if="{{!item.imagesBase64[img]}}">
+                <text>加载中...</text>
+              </view>
+            </view>
+          </view>
+          <view class="no-images" wx:else>
+            <text>暂无图片，点击上传按钮添加</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{samples.length === 0}}">
+      <text class="empty-icon">📷</text>
+      <text class="empty-text">暂无商品</text>
+    </view>
+
+    <!-- 使用说明 -->
+    <view class="help-section">
+      <view class="help-title">💡 使用说明</view>
+      <view class="help-list">
+        <view class="help-item">
+          <text class="help-num">1</text>
+          <text class="help-text">为每个商品上传 3-10 张不同角度的照片</text>
+        </view>
+        <view class="help-item">
+          <text class="help-num">2</text>
+          <text class="help-text">建议拍摄正面、侧面、背面、45度角等</text>
+        </view>
+        <view class="help-item">
+          <text class="help-num">3</text>
+          <text class="help-text">上传完成后点击"重建索引"</text>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

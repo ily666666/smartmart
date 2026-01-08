@@ -1,0 +1,19 @@
+{
+  "name": "smartmart-miniapp",
+  "version": "0.1.0",
+  "description": "SmartMart  店小蜜微信小程序",
+  "main": "app.js",
+  "scripts": {
+    "dev": "echo '请使用微信开发者工具打开 miniapp 目录'",
+    "build": "echo '请使用微信开发者工具进行编译'"
+  },
+  "keywords": [
+    "wechat",
+    "miniprogram",
+    "smartmart"
+  ],
+  "author": "SmartMart Team",
+  "license": "MIT"
+}
+
+

@@ -1,0 +1,148 @@
+<!--pages/vision/vision.wxml-->
+<view class="container">
+  <!-- 状态栏 -->
+  <view class="status-bar">
+    <view class="status-item">
+      <view class="status-dot {{wsConnected ? 'connected' : 'disconnected'}}"></view>
+      <text>{{wsConnected ? '已连接' : '未连接'}}</text>
+    </view>
+  </view>
+
+  <!-- 主卡片（整合相机和操作栏） -->
+  <view class="main-card" wx:if="{{!candidates.length}}">
+    <!-- 相机区域 -->
+    <view class="camera-section">
+      <!-- 内嵌相机 -->
+      <camera 
+        wx:if="{{!imagePath && cameraReady}}"
+        class="camera"
+        device-position="back"
+        flash="{{flashMode}}"
+        binderror="onCameraError"
+      >
+        <cover-view class="camera-overlay">
+          <cover-view class="camera-tip">将商品放入画面中</cover-view>
+        </cover-view>
+      </camera>
+      
+      <!-- 拍摄的图片预览 -->
+      <view class="preview-box" wx:if="{{imagePath}}">
+        <image src="{{imagePath}}" mode="aspectFill" class="preview-image"></image>
+        <view class="preview-status" wx:if="{{compressing || uploading}}">
+          <view class="loading-spinner-small"></view>
+          <text>{{compressing ? '处理中...' : '识别中...'}}</text>
+        </view>
+      </view>
+      
+      <!-- 相机加载中 -->
+      <view class="camera-placeholder" wx:if="{{!cameraReady && !imagePath}}">
+        <text class="placeholder-icon">📷</text>
+        <text class="placeholder-text">相机加载中...</text>
+      </view>
+    </view>
+    
+    <!-- 拍照操作栏（整合在卡片底部） -->
+    <view class="capture-bar" wx:if="{{!imagePath}}">
+      <view class="capture-action" bindtap="toggleFlash">
+        <text class="action-icon">{{flashMode === 'on' ? '🔦' : '💡'}}</text>
+        <text class="action-label">闪光灯</text>
+      </view>
+      
+      <view class="capture-btn" bindtap="capturePhoto">
+        <view class="capture-btn-inner"></view>
+      </view>
+      
+      <view class="capture-action" bindtap="chooseFromAlbum">
+        <text class="action-icon">🖼️</text>
+        <text class="action-label">相册</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 有候选结果时显示小预览图 -->
+  <view class="result-preview" wx:if="{{candidates.length && imagePath}}">
+    <image src="{{imagePath}}" mode="aspectFill" class="result-image"></image>
+    <text class="result-label">拍摄的图片</text>
+  </view>
+
+  <!-- 候选商品列表 -->
+  <view class="candidates-section" wx:if="{{candidates.length}}">
+    <view class="section-header">
+      <text class="section-title">识别结果</text>
+      <text class="section-subtitle">点击选择匹配的商品</text>
+    </view>
+    
+    <scroll-view class="candidates-list" scroll-y>
+      <view 
+        class="candidate-item"
+        wx:for="{{candidates}}"
+        wx:key="sku_id"
+        data-index="{{index}}"
+        bindtap="confirmProduct"
+      >
+        <view class="rank rank-{{index + 1}}">{{index + 1}}</view>
+        <view class="info">
+          <text class="name">{{item.name}}</text>
+          <text class="price">¥{{item.price}}</text>
+        </view>
+        <view class="score">
+          <text class="score-value">{{item.scorePercent}}%</text>
+        </view>
+      </view>
+    </scroll-view>
+    
+    <view class="candidates-actions">
+      <button class="btn-retake" bindtap="reset">
+        📷 重新拍照
+      </button>
+    </view>
+  </view>
+
+  <!-- 识别历史（无候选时显示） -->
+  <view class="history-section" wx:if="{{!candidates.length && !imagePath && visionHistory.length}}">
+    <view class="history-header">
+      <text class="history-title">识别记录</text>
+      <text class="history-clear" bindtap="clearHistory">清空</text>
+    </view>
+    <scroll-view class="history-list" scroll-y>
+      <view 
+        class="history-item success"
+        wx:for="{{visionHistory}}"
+        wx:key="id"
+      >
+        <view class="history-icon">✅</view>
+        <view class="history-info">
+          <text class="history-name">{{item.name}}</text>
+          <text class="history-code">{{item.time}}</text>
+        </view>
+        <view class="history-right">
+          <text class="history-price">¥{{item.price}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 加载遮罩 -->
+  <view class="loading-overlay" wx:if="{{compressing || uploading}}">
+    <view class="loading-box">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">
+        {{compressing ? '处理图片...' : '识别商品...'}}
+      </text>
+    </view>
+  </view>
+
+  <!-- 底部切换栏 -->
+  <view class="mode-switch-bar">
+    <view class="mode-switch-inner">
+      <view class="mode-btn" bindtap="switchToScan">
+        <text class="mode-icon">🔍</text>
+        <text class="mode-text">扫码录入</text>
+      </view>
+      <view class="mode-btn active">
+        <text class="mode-icon">👁️</text>
+        <text class="mode-text">AI识别</text>
+      </view>
+    </view>
+  </view>
+</view>

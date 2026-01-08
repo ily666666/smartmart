@@ -1,0 +1,561 @@
+/* pages/vision/vision.wxss */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f0f4f8 0%, #e2e8f0 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 20rpx;
+  padding-bottom: 160rpx;
+  box-sizing: border-box;
+}
+
+/* 状态栏 */
+.status-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10rpx 0;
+  margin-bottom: 10rpx;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  color: #64748b;
+  font-size: 24rpx;
+  background: white;
+  padding: 10rpx 20rpx;
+  border-radius: 30rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+}
+
+.status-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+}
+
+.status-dot.connected {
+  background: #10b981;
+  box-shadow: 0 0 8rpx #10b981;
+}
+
+.status-dot.disconnected {
+  background: #ef4444;
+}
+
+/* 主卡片 - 整合相机和操作区 */
+.main-card {
+  background: white;
+  border-radius: 32rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.08);
+}
+
+/* 相机区域 */
+.camera-section {
+  position: relative;
+  width: 100%;
+  /* 4:3 比例 */
+  padding-bottom: 100%;
+  background: #1a1a2e;
+}
+
+.camera {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.camera-overlay {
+  position: absolute;
+  bottom: 30rpx;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.camera-tip {
+  background: rgba(255, 255, 255, 0.95);
+  color: #334155;
+  font-size: 26rpx;
+  padding: 14rpx 28rpx;
+  border-radius: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+}
+
+.camera-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.placeholder-icon {
+  font-size: 100rpx;
+  margin-bottom: 20rpx;
+}
+
+.placeholder-text {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 预览图片 */
+.preview-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #1a1a2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-status {
+  position: absolute;
+  bottom: 30rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 14rpx 28rpx;
+  border-radius: 30rpx;
+  color: #334155;
+  font-size: 26rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+}
+
+.loading-spinner-small {
+  width: 28rpx;
+  height: 28rpx;
+  border: 4rpx solid rgba(100, 116, 139, 0.3);
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* 拍照操作栏 - 整合在卡片内 */
+.capture-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 30rpx 40rpx;
+  background: white;
+}
+
+.capture-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx;
+}
+
+.capture-action .action-icon {
+  font-size: 44rpx;
+}
+
+.capture-action .action-label {
+  font-size: 22rpx;
+  color: #64748b;
+}
+
+.capture-btn {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 20rpx rgba(102, 126, 234, 0.4);
+}
+
+.capture-btn:active {
+  transform: scale(0.95);
+}
+
+.capture-btn-inner {
+  width: 90rpx;
+  height: 90rpx;
+  border-radius: 50%;
+  background: white;
+}
+
+/* 结果预览图 */
+.result-preview {
+  padding: 20rpx 24rpx;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  margin-bottom: 16rpx;
+}
+
+.result-image {
+  width: 70rpx;
+  height: 70rpx;
+  border-radius: 12rpx;
+  object-fit: cover;
+}
+
+.result-label {
+  font-size: 24rpx;
+  color: #64748b;
+}
+
+/* 候选商品列表 */
+.candidates-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: white;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 20rpx 24rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: white;
+  display: block;
+}
+
+.section-subtitle {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 4rpx;
+  display: block;
+}
+
+.candidates-list {
+  flex: 1;
+  padding: 16rpx;
+  min-height: 0;
+  max-height: 50vh;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+.candidate-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  background: white;
+  border-radius: 16rpx;
+  margin-bottom: 12rpx;
+  gap: 16rpx;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  border: 2rpx solid #e2e8f0;
+  transition: all 0.15s;
+}
+
+.candidate-item:active {
+  background: #f0f4ff;
+  border-color: #667eea;
+  transform: scale(0.98);
+}
+
+.rank {
+  width: 50rpx;
+  height: 50rpx;
+  border-radius: 50%;
+  background: #e0e0e0;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.rank-1 {
+  background: linear-gradient(135deg, #ffd700 0%, #ffb800 100%);
+  color: white;
+}
+
+.rank-2 {
+  background: linear-gradient(135deg, #c0c0c0 0%, #a0a0a0 100%);
+  color: white;
+}
+
+.rank-3 {
+  background: linear-gradient(135deg, #cd7f32 0%, #b06020 100%);
+  color: white;
+}
+
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.price {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #10b981;
+}
+
+.score {
+  flex-shrink: 0;
+}
+
+.score-value {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.candidates-actions {
+  padding: 16rpx;
+  background: white;
+  border-top: 1rpx solid #f1f5f9;
+}
+
+.btn-retake {
+  width: 100%;
+  height: 76rpx;
+  background: white;
+  color: #667eea;
+  border: 2rpx solid #667eea;
+  border-radius: 38rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+/* 识别历史 - 整合在主卡片下方 */
+.history-section {
+  margin-top: 20rpx;
+  background: white;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  max-height: 320rpx;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18rpx 24rpx;
+  border-bottom: 1rpx solid #f1f5f9;
+}
+
+.history-title {
+  font-size: 26rpx;
+  color: #334155;
+  font-weight: 600;
+}
+
+.history-clear {
+  font-size: 22rpx;
+  color: #94a3b8;
+  padding: 8rpx 16rpx;
+}
+
+.history-list {
+  padding: 12rpx 16rpx;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-y: auto;
+  max-height: 260rpx;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 16rpx;
+  background: #f8fafc;
+  border-radius: 12rpx;
+  margin-bottom: 8rpx;
+  gap: 12rpx;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+}
+
+.history-item.success {
+  border-left: 4rpx solid #10b981;
+}
+
+.history-icon {
+  font-size: 28rpx;
+  flex-shrink: 0;
+}
+
+.history-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rpx;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.history-name {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-code {
+  font-size: 20rpx;
+  color: #999;
+}
+
+.history-right {
+  flex-shrink: 0;
+}
+
+.history-price {
+  font-size: 26rpx;
+  color: #10b981;
+  font-weight: bold;
+}
+
+/* 加载遮罩 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10rpx);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-box {
+  background: white;
+  padding: 50rpx 60rpx;
+  border-radius: 24rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 5rpx solid #e2e8f0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 26rpx;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* 底部切换栏 */
+.mode-switch-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20rpx);
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.mode-switch-inner {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 16rpx;
+  padding: 8rpx;
+}
+
+.mode-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 20rpx 0;
+  border-radius: 12rpx;
+  transition: all 0.3s ease;
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
+}
+
+.mode-btn.active .mode-icon,
+.mode-btn.active .mode-text {
+  color: #ffffff;
+}
+
+.mode-icon {
+  font-size: 32rpx;
+}
+
+.mode-text {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #6b7280;
+}

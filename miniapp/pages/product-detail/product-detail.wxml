@@ -1,0 +1,157 @@
+<view class="page-container">
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <block wx:else>
+    <!-- 查看模式 -->
+    <view class="view-mode" wx:if="{{mode === 'view'}}">
+      <!-- 商品图片 -->
+      <view class="product-image-section">
+        <!-- 优先使用 base64， 显示图片 -->
+        <image 
+          wx:if="{{imageBase64 || product.image_url}}"
+          class="product-image"
+          src="{{imageBase64 || product.image_url}}"
+          mode="aspectFit"
+        />
+        <view class="image-loading" wx:elif="{{product.image_url && !imageBase64}}">
+          <text>加载中...</text>
+        </view>
+        <view class="no-image" wx:else>
+          <text class="no-image-icon">📦</text>
+          <text class="no-image-text">暂无图片</text>
+        </view>
+      </view>
+
+      <!-- 商品信息 -->
+      <view class="info-card">
+        <view class="product-name">{{product.name}}</view>
+        <view class="product-category-tag">{{product.category}}</view>
+        
+        <view class="info-row">
+          <text class="info-label">条码</text>
+          <text class="info-value">{{product.barcode}}</text>
+        </view>
+        
+        <view class="info-row price-row">
+          <view class="price-item">
+            <text class="info-label">售价</text>
+            <text class="info-value price">¥{{product.price}}</text>
+          </view>
+          <view class="price-item" wx:if="{{product.cost_price}}">
+            <text class="info-label">进价</text>
+            <text class="info-value cost">¥{{product.cost_price}}</text>
+          </view>
+        </view>
+        
+        <view class="info-row">
+          <text class="info-label">库存</text>
+          <text class="info-value stock {{product.stock < 10 ? 'low' : ''}}">{{product.stock}} 件</text>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="action-buttons">
+        <button class="btn btn-primary" bindtap="enterEditMode">✏️ 编辑商品</button>
+        <button class="btn btn-danger" bindtap="deleteProduct">🗑️ 删除商品</button>
+      </view>
+    </view>
+
+    <!-- 编辑/添加模式 -->
+    <view class="edit-mode" wx:if="{{mode === 'edit' || mode === 'add'}}">
+      <view class="form-card">
+        <!-- 条码 -->
+        <view class="form-item">
+          <text class="form-label">商品条码 *</text>
+          <view class="form-input-wrap">
+            <input 
+              class="form-input"
+              placeholder="请输入或扫描条码"
+              value="{{product.barcode}}"
+              data-field="barcode"
+              bindinput="onInput"
+            />
+            <view class="scan-btn-small" bindtap="scanBarcode">📷</view>
+          </view>
+        </view>
+
+        <!-- 名称 -->
+        <view class="form-item">
+          <text class="form-label">商品名称 *</text>
+          <input 
+            class="form-input"
+            placeholder="请输入商品名称"
+            value="{{product.name}}"
+            data-field="name"
+            bindinput="onInput"
+          />
+        </view>
+
+        <!-- 分类 -->
+        <view class="form-item">
+          <text class="form-label">商品分类</text>
+          <picker 
+            mode="selector" 
+            range="{{categories}}"
+            value="{{categories.indexOf(product.category)}}"
+            bindchange="onCategoryChange"
+          >
+            <view class="form-picker">
+              <text>{{product.category || '请选择分类'}}</text>
+              <text class="picker-arrow">▼</text>
+            </view>
+          </picker>
+        </view>
+
+        <!-- 售价 -->
+        <view class="form-item">
+          <text class="form-label">售价 *</text>
+          <input 
+            class="form-input"
+            type="digit"
+            placeholder="0.00"
+            value="{{product.price}}"
+            data-field="price"
+            bindinput="onInput"
+          />
+        </view>
+
+        <!-- 进价 -->
+        <view class="form-item">
+          <text class="form-label">进价</text>
+          <input 
+            class="form-input"
+            type="digit"
+            placeholder="0.00 (可选)"
+            value="{{product.cost_price}}"
+            data-field="cost_price"
+            bindinput="onInput"
+          />
+        </view>
+
+        <!-- 库存 -->
+        <view class="form-item">
+          <text class="form-label">库存</text>
+          <input 
+            class="form-input"
+            type="number"
+            placeholder="0"
+            value="{{product.stock}}"
+            data-field="stock"
+            bindinput="onInput"
+          />
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="action-buttons">
+        <button class="btn btn-secondary" bindtap="cancelEdit" disabled="{{saving}}">取消</button>
+        <button class="btn btn-primary" bindtap="saveProduct" loading="{{saving}}" disabled="{{saving}}">
+          {{saving ? '保存中...' : '保存'}}
+        </button>
+      </view>
+    </view>
+  </block>
+</view>

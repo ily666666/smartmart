@@ -1,0 +1,239 @@
+<view class="page-container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <text class="header-icon">🤖</text>
+    <view class="header-text">
+      <text class="header-title">智能分析</text>
+      <text class="header-desc">AI 帮您做决策</text>
+    </view>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="tab-bar">
+    <view 
+      class="tab-item {{activeTab === 'restock' ? 'active' : ''}}"
+      data-tab="restock"
+      bindtap="switchTab"
+    >
+      <text class="tab-icon">📦</text>
+      <text class="tab-text">补货建议</text>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'anomaly' ? 'active' : ''}}"
+      data-tab="anomaly"
+      bindtap="switchTab"
+    >
+      <text class="tab-icon">🔍</text>
+      <text class="tab-text">异常检测</text>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-icon">⏳</text>
+    <text class="loading-text">正在分析...</text>
+  </view>
+
+  <!-- 补货建议 -->
+  <view class="tab-content" wx:if="{{activeTab === 'restock' && !loading}}">
+    <!-- 设置区域 -->
+    <view class="settings-section">
+      <view class="setting-row">
+        <text class="setting-label">📅 统计周期</text>
+        <view class="setting-options">
+          <view 
+            class="option-btn {{days === 7 ? 'active' : ''}}"
+            data-days="7"
+            bindtap="setDays"
+          >7天</view>
+          <view 
+            class="option-btn {{days === 15 ? 'active' : ''}}"
+            data-days="15"
+            bindtap="setDays"
+          >15天</view>
+          <view 
+            class="option-btn {{days === 30 ? 'active' : ''}}"
+            data-days="30"
+            bindtap="setDays"
+          >30天</view>
+        </view>
+      </view>
+      <view class="setting-row">
+        <text class="setting-label">🛡️ 安全天数</text>
+        <view class="setting-options">
+          <view 
+            class="option-btn {{safetyStockDays === 3 ? 'active' : ''}}"
+            data-days="3"
+            bindtap="setSafetyDays"
+          >3天</view>
+          <view 
+            class="option-btn {{safetyStockDays === 5 ? 'active' : ''}}"
+            data-days="5"
+            bindtap="setSafetyDays"
+          >5天</view>
+          <view 
+            class="option-btn {{safetyStockDays === 7 ? 'active' : ''}}"
+            data-days="7"
+            bindtap="setSafetyDays"
+          >7天</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 统计概览 -->
+    <view class="overview-cards" wx:if="{{restockStats.total > 0}}">
+      <view class="overview-card total">
+        <text class="card-icon">📦</text>
+        <text class="card-value">{{restockStats.total}}</text>
+        <text class="card-label">需补货</text>
+      </view>
+      <view class="overview-card urgent">
+        <text class="card-icon">🔴</text>
+        <text class="card-value">{{restockStats.urgent}}</text>
+        <text class="card-label">紧急</text>
+      </view>
+      <view class="overview-card warning">
+        <text class="card-icon">🟠</text>
+        <text class="card-value">{{restockStats.warning}}</text>
+        <text class="card-label">尽快</text>
+      </view>
+    </view>
+
+    <!-- 补货列表 -->
+    <view class="restock-list" wx:if="{{restockSuggestions.length > 0}}">
+      <view 
+        class="restock-item {{item.days_until_stockout < 3 ? 'critical' : item.days_until_stockout < 7 ? 'warning' : 'normal'}}"
+        wx:for="{{restockSuggestions}}"
+        wx:key="sku_id"
+      >
+        <view class="item-header">
+          <view class="urgency-badge">
+            <text>{{item.days_until_stockout < 3 ? '🔴 紧急' : item.days_until_stockout < 7 ? '🟠 尽快' : '🟡 注意'}}</text>
+          </view>
+          <text class="item-name">{{item.name}}</text>
+        </view>
+        
+        <view class="item-data">
+          <view class="data-item">
+            <text class="data-label">现有</text>
+            <text class="data-value">{{item.current_stock}}件</text>
+          </view>
+          <view class="data-arrow">→</view>
+          <view class="data-item highlight">
+            <text class="data-label">建议补</text>
+            <text class="data-value">{{item.suggested_restock}}件</text>
+          </view>
+        </view>
+        
+        <view class="item-forecast">
+          <text class="forecast-text">⏳ 约 {{item.days_until_stockout}} 天后卖完</text>
+          <text class="daily-sales">每天约卖 {{item.predicted_daily_sales}} 件</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="good-state" wx:if="{{restockSuggestions.length === 0}}">
+      <text class="good-icon">✅</text>
+      <text class="good-text">太棒了！所有商品库存充足</text>
+    </view>
+  </view>
+
+  <!-- 异常检测 -->
+  <view class="tab-content" wx:if="{{activeTab === 'anomaly' && !loading}}">
+    <!-- 设置区域 -->
+    <view class="settings-section">
+      <view class="setting-row">
+        <text class="setting-label">📅 检测周期</text>
+        <view class="setting-options">
+          <view 
+            class="option-btn {{days === 7 ? 'active' : ''}}"
+            data-days="7"
+            bindtap="setDays"
+          >7天</view>
+          <view 
+            class="option-btn {{days === 15 ? 'active' : ''}}"
+            data-days="15"
+            bindtap="setDays"
+          >15天</view>
+          <view 
+            class="option-btn {{days === 30 ? 'active' : ''}}"
+            data-days="30"
+            bindtap="setDays"
+          >30天</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 统计概览 -->
+    <view class="overview-cards" wx:if="{{anomalyStats.total > 0}}">
+      <view class="overview-card total">
+        <text class="card-icon">🔍</text>
+        <text class="card-value">{{anomalyStats.total}}</text>
+        <text class="card-label">发现异常</text>
+      </view>
+      <view class="overview-card surge">
+        <text class="card-icon">📈</text>
+        <text class="card-value">{{anomalyStats.surge}}</text>
+        <text class="card-label">卖多</text>
+      </view>
+      <view class="overview-card drop">
+        <text class="card-icon">📉</text>
+        <text class="card-value">{{anomalyStats.drop}}</text>
+        <text class="card-label">卖少</text>
+      </view>
+    </view>
+
+    <!-- 异常列表 -->
+    <view class="anomaly-list" wx:if="{{anomalies.length > 0}}">
+      <view 
+        class="anomaly-item {{item.anomaly_type}}"
+        wx:for="{{anomalies}}"
+        wx:key="index"
+      >
+        <view class="anomaly-header">
+          <view class="type-badge {{item.anomaly_type}}">
+            <text>{{item.anomaly_type === 'surge' ? '📈 卖得多' : item.anomaly_type === 'drop' ? '📉 卖得少' : '⚠️ 没卖出'}}</text>
+          </view>
+          <text class="anomaly-date">{{item.date}}</text>
+        </view>
+        
+        <text class="anomaly-name">{{item.name}}</text>
+        
+        <view class="sales-compare">
+          <view class="compare-item">
+            <text class="compare-label">平时卖</text>
+            <text class="compare-value">{{item.expected_sales}}件</text>
+          </view>
+          <view class="compare-arrow">
+            {{item.anomaly_type === 'surge' ? '↑' : '↓'}}
+          </view>
+          <view class="compare-item">
+            <text class="compare-label">这天卖</text>
+            <text class="compare-value highlight">{{item.actual_sales}}件</text>
+          </view>
+        </view>
+        
+        <view class="possible-reasons" wx:if="{{item.possible_reasons && item.possible_reasons.length > 0}}">
+          <text class="reasons-title">可能原因：</text>
+          <view class="reasons-tags">
+            <text class="reason-tag" wx:for="{{item.possible_reasons}}" wx:key="*this" wx:for-item="reason">{{reason}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="good-state" wx:if="{{anomalies.length === 0}}">
+      <text class="good-icon">✅</text>
+      <text class="good-text">未发现销售异常，一切正常</text>
+    </view>
+  </view>
+
+  <!-- 帮助说明 -->
+  <view class="help-tip">
+    <text class="tip-icon">💡</text>
+    <text class="tip-text" wx:if="{{activeTab === 'restock'}}">系统根据销售情况，计算每个商品大概多久会卖完</text>
+    <text class="tip-text" wx:if="{{activeTab === 'anomaly'}}">系统会发现销售异常，帮您及时关注</text>
+  </view>
+</view>

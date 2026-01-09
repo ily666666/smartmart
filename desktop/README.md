@@ -50,42 +50,80 @@ npm run tauri dev    # 启动 Tauri 开发模式
 npm run tauri:build
 ```
 
-构建产物位于 `src-tauri/target/release/`
+构建产物位于 `src-tauri/target/release/bundle/`
 
 ## 项目结构
 
 ```
 desktop/
-├── src/                    # React 源代码
-│   ├── App.tsx            # 主应用组件
-│   ├── main.tsx           # 应用入口
-│   ├── App.css            # 样式
-│   └── components/        # React 组件
-│       ├── Scanner.tsx    # 扫码组件
-│       ├── Cart.tsx       # 购物车组件
-│       ├── Checkout.tsx   # 结账组件
-│       └── ProductList.tsx # 商品列表
-├── src-tauri/             # Tauri Rust 后端
+├── src/                       # React 源代码
+│   ├── App.tsx               # 主应用组件
+│   ├── App.css               # 全局样式
+│   ├── main.tsx              # 应用入口
+│   ├── config.ts             # API 配置
+│   ├── components/           # 通用组件
+│   │   ├── Layout.tsx        # 布局组件（侧边栏导航）
+│   │   └── Layout.css
+│   └── pages/                # 页面组件
+│       ├── Dashboard.tsx     # 仪表盘
+│       ├── Cashier.tsx       # 收银台
+│       ├── Products.tsx      # 商品管理
+│       ├── Orders.tsx        # 订单查询
+│       ├── Reports.tsx       # 数据中心
+│       ├── Samples.tsx       # AI 样本管理
+│       ├── Database.tsx      # 数据库管理
+│       ├── Pairing.tsx       # 设备配对
+│       └── Settings.tsx      # 系统设置
+├── src-tauri/                # Tauri Rust 后端
 │   ├── src/
-│   │   └── main.rs        # Rust 主程序
-│   ├── tauri.conf.json    # Tauri 配置
-│   ├── Cargo.toml         # Rust 依赖
-│   └── icons/             # 应用图标
-├── index.html             # HTML 入口
-├── vite.config.ts         # Vite 配置
-├── tsconfig.json          # TypeScript 配置
-├── package.json           # npm 配置
-└── README.md              # 本文件
+│   │   ├── main.rs           # Rust 主程序
+│   │   └── backend.rs        # Backend 进程管理
+│   ├── tauri.conf.json       # Tauri 配置
+│   ├── Cargo.toml            # Rust 依赖
+│   └── icons/                # 应用图标
+├── index.html                # HTML 入口
+├── vite.config.ts            # Vite 配置
+├── tsconfig.json             # TypeScript 配置
+├── package.json              # npm 配置
+└── README.md                 # 本文件
 ```
 
 ## 主要功能
 
-1. **扫码收银**: 条码扫描，添加商品到购物车
-2. **购物车管理**: 增删改商品，计算总价
-3. **结账支付**: 支持多种支付方式
-4. **商品管理**: 商品列表、搜索、编辑
-5. **WebSocket 通信**: 接收小程序扫码/拍照数据
-6. **本地存储**: 离线数据缓存
+### 收银功能
+- 💰 **收银台** - 条码扫描、AI 识别、购物车管理、快捷结账
+- 📋 **订单查询** - 订单列表、详情查看、订单撤销
+
+### 商品管理
+- 📦 **商品管理** - 商品列表、搜索、新增、编辑、删除
+- 🧠 **AI 样本管理** - 上传商品图片、构建识别索引
+
+### 数据分析
+- 🏠 **仪表盘** - 今日销售概览、快捷操作入口
+- 📊 **数据中心** - 销售报表、趋势分析
+
+### 系统管理
+- 🗄️ **数据库管理** - 查看/导出/清空数据表
+- 🔗 **设备配对** - 生成二维码、小程序扫码配对
+- ⚙️ **系统设置** - 密码保护、页面可见性、开机自启动
+
+## 系统设置功能
+
+### 🔐 密码保护
+- 进入系统设置需要输入管理密码
+- 默认密码：`admin`
+- 支持修改密码（需先设置密保）
+- 支持密保问题找回密码
+
+### 👁️ 页面可见性
+- 控制左侧导航栏显示哪些页面
+- 收银台和系统设置为必显示页面
+- 其他页面可自由隐藏/显示
+
+### 🚀 开机自启动
+- 支持 Windows 开机自动启动
+- 通过 Tauri 插件实现
+- 可在设置页面开关
 
 ## 配置
 
@@ -96,10 +134,16 @@ export const API_BASE_URL = "http://localhost:8000";
 export const WS_URL = "ws://localhost:8000/ws";
 ```
 
+也可以通过 `.env` 文件配置：
+
+```bash
+VITE_API_HOST=192.168.1.100
+VITE_API_PORT=8000
+```
+
 ## 开发建议
 
 - 使用 React DevTools 调试
 - 使用 Tauri DevTools 查看 Rust 日志
 - 开发时先启动后端服务
-
-
+- 系统设置数据存储在后端数据库中

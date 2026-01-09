@@ -86,15 +86,21 @@ backend/
 │   │   ├── __init__.py
 │   │   ├── product.py       # 商品模型
 │   │   ├── inventory.py     # 库存模型
-│   │   └── transaction.py   # 交易模型
+│   │   ├── transaction.py   # 交易模型
+│   │   └── settings.py      # 系统设置模型
 │   ├── schemas/             # Pydantic 模式
 │   │   └── __init__.py
 │   ├── api/                 # API 路由
 │   │   ├── __init__.py
 │   │   ├── products.py      # 商品接口
-│   │   ├── inventory.py     # 库存接口
-│   │   ├── cashier.py       # 收银接口
-│   │   └── websocket.py     # WebSocket 接口
+│   │   ├── orders.py        # 订单接口
+│   │   ├── reports.py       # 报表接口
+│   │   ├── database.py      # 数据库管理接口
+│   │   ├── settings.py      # 系统设置接口
+│   │   ├── recognition.py   # AI 识别接口
+│   │   ├── samples.py       # AI 样本接口
+│   │   ├── pairing.py       # 设备配对接口
+│   │   └── websocket_api.py # WebSocket 接口
 │   └── services/            # 业务逻辑
 │       └── __init__.py
 ├── pyproject.toml           # 项目配置
@@ -109,6 +115,7 @@ backend/
 - ✅ `order_items` - 订单明细表
 - ✅ `inventory_moves` - 库存变动表
 - ✅ `devices` - 设备表
+- ✅ `system_settings` - 系统设置表（密码、密保、页面可见性）
 
 ### 2. REST API
 - ✅ `GET /products/by_barcode?code=xxxx` - 根据条码查询商品
@@ -188,6 +195,14 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 - `POST /api/recognition/recognize` - 图像识别
 - `GET /api/recognition/status` - AI 状态
 - `POST /api/recognition/preload` - 预加载模型
+
+### 系统设置 API
+
+- `GET /settings` - 获取系统设置
+- `PUT /settings` - 更新系统设置
+- `POST /settings/verify-password` - 验证密码
+- `POST /settings/reset-password` - 通过密保重置密码
+- `POST /settings/reset-to-default` - 重置为默认密码
 
 ## 🧪 测试文件
 

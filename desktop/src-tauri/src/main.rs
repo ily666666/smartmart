@@ -5,6 +5,35 @@ mod backend;
 
 use std::sync::Mutex;
 use backend::BackendProcess;
+use tauri_plugin_autostart::MacosLauncher;
+
+// 开机自启动相关命令
+#[tauri::command]
+fn autostart_enable(app_handle: tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_autostart::ManagerExt;
+    app_handle
+        .autolaunch()
+        .enable()
+        .map_err(|e| format!("启用自启动失败: {}", e))
+}
+
+#[tauri::command]
+fn autostart_disable(app_handle: tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_autostart::ManagerExt;
+    app_handle
+        .autolaunch()
+        .disable()
+        .map_err(|e| format!("禁用自启动失败: {}", e))
+}
+
+#[tauri::command]
+fn autostart_is_enabled(app_handle: tauri::AppHandle) -> Result<bool, String> {
+    use tauri_plugin_autostart::ManagerExt;
+    app_handle
+        .autolaunch()
+        .is_enabled()
+        .map_err(|e| format!("获取自启动状态失败: {}", e))
+}
 
 fn main() {
     // 创建 Backend 进程管理器
@@ -29,10 +58,17 @@ fn main() {
     }
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec!["--minimized"]), // 可选参数：启动时最小化
+        ))
         .manage(Mutex::new(backend))
         .invoke_handler(tauri::generate_handler![
             backend::get_backend_status,
             backend::restart_backend,
+            autostart_enable,
+            autostart_disable,
+            autostart_is_enabled,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

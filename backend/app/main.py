@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from app.database import engine, Base, init_sample_data
-from app.api import products, websocket_api, orders, vision, reports, analysis, pairing, recognition, samples, database
+from app.api import products, websocket_api, orders, vision, reports, analysis, pairing, recognition, samples, database, settings
 
 # 确保静态文件目录存在
 STATIC_DIR = Path("static")
@@ -80,6 +80,7 @@ app.include_router(pairing.router, prefix="/pairing", tags=["设备配对"])
 app.include_router(recognition.router, prefix="/api/recognition", tags=["AI 识别"])
 app.include_router(samples.router, prefix="/api/samples", tags=["AI 样本管理"])
 app.include_router(database.router, prefix="/database", tags=["数据库管理"])
+app.include_router(settings.router, tags=["系统设置"])
 app.include_router(websocket_api.router, tags=["WebSocket"])
 
 

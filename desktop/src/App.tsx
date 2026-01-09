@@ -8,6 +8,7 @@ import Reports from './pages/Reports';
 import Pairing from './pages/Pairing';
 import Samples from './pages/Samples';
 import Database from './pages/Database';
+import Settings from './pages/Settings';
 import "./App.css";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/pairing" element={<Pairing />} />
           <Route path="/samples" element={<Samples />} />
           <Route path="/database" element={<Database />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Layout>
     </Router>

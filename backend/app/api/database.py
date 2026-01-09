@@ -10,6 +10,7 @@ from app.database import get_db
 from app.models.product import Product
 from app.models.transaction import Order, OrderItem
 from app.models.device import Device
+from app.models.settings import SystemSettings
 
 router = APIRouter()
 
@@ -20,6 +21,7 @@ TABLE_MODELS = {
     "orders": Order,
     "order_items": OrderItem,
     "devices": Device,
+    "system_settings": SystemSettings,
 }
 
 # 表的中文名称
@@ -28,6 +30,7 @@ TABLE_NAMES_CN = {
     "orders": "订单表",
     "order_items": "订单明细表",
     "devices": "设备表",
+    "system_settings": "系统设置表",
 }
 
 

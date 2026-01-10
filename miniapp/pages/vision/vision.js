@@ -22,7 +22,50 @@ Page({
   onLoad() {
     console.log('外观识别页加载')
     
-    // 延迟初始化相机
+    // 检查隐私授权后再初始化相机
+    this.checkPrivacyAndInitCamera()
+  },
+  
+  // 检查隐私授权
+  checkPrivacyAndInitCamera() {
+    if (wx.getPrivacySetting) {
+      wx.getPrivacySetting({
+        success: (res) => {
+          console.log('隐私授权状态:', res)
+          if (res.needAuthorization) {
+            // 需要授权，主动弹出隐私协议
+            wx.requirePrivacyAuthorize({
+              success: () => {
+                console.log('✅ 用户同意隐私协议')
+                this.initCamera()
+              },
+              fail: (err) => {
+                console.error('❌ 用户拒绝隐私协议:', err)
+                wx.showModal({
+                  title: '需要同意隐私协议',
+                  content: '使用相机功能需要同意隐私协议，您可以点击"从相册选择"继续使用',
+                  showCancel: false
+                })
+              }
+            })
+          } else {
+            // 已授权，直接初始化相机
+            this.initCamera()
+          }
+        },
+        fail: () => {
+          // 获取失败，尝试直接初始化
+          this.initCamera()
+        }
+      })
+    } else {
+      // 低版本基础库，直接初始化
+      this.initCamera()
+    }
+  },
+  
+  // 初始化相机
+  initCamera() {
     setTimeout(() => {
       this._cameraContext = wx.createCameraContext()
       this.setData({ cameraReady: true })

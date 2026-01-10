@@ -685,9 +685,11 @@ const Cashier = () => {
       </div>
 
       <div className="cashier-content">
+        {/* 左侧：商品列表 */}
         <div className="cart-section">
           <div className="cart-header">
-            <h2>购物车 ({totalItems} 件)</h2>
+            <h2>🛒 购物车</h2>
+            <span className="cart-count">{totalItems} 件商品</span>
           </div>
           
           {cart.length === 0 ? (
@@ -697,92 +699,102 @@ const Cashier = () => {
               <p className="hint">请使用扫码枪扫描商品条码</p>
             </div>
           ) : (
-            <table className="cart-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '50px' }}>选择</th>
-                  <th style={{ width: '60px' }}>#</th>
-                  <th>商品名称</th>
-                  <th style={{ width: '100px' }}>单价</th>
-                  <th style={{ width: '150px' }}>数量</th>
-                  <th style={{ width: '100px' }}>小计</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cart.map((item, index) => (
-                  <tr
-                    key={item.barcode}
-                    className={selectedRows.has(item.barcode) ? "selected" : ""}
-                  >
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedRows.has(item.barcode)}
-                        onChange={() => toggleRowSelection(item.barcode)}
-                      />
-                    </td>
-                    <td>{index + 1}</td>
-                    <td className="product-name">{item.name}</td>
-                    <td className="price">¥{item.price.toFixed(2)}</td>
-                    <td className="quantity-cell">
-                      <button
-                        className="qty-btn"
-                        onClick={() => updateQuantity(item.barcode, -1)}
-                      >
-                        -
-                      </button>
-                      <span className="quantity">{item.quantity}</span>
-                      <button
-                        className="qty-btn"
-                        onClick={() => updateQuantity(item.barcode, 1)}
-                      >
-                        +
-                      </button>
-                    </td>
-                    <td className="subtotal">
-                      ¥{(item.price * item.quantity).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="cart-grid">
+              {cart.map((item, index) => (
+                <div 
+                  key={item.barcode} 
+                  className={`cart-card ${selectedRows.has(item.barcode) ? 'selected' : ''}`}
+                  onClick={() => toggleRowSelection(item.barcode)}
+                >
+                  <div className="card-header">
+                    <span className="card-index">{index + 1}</span>
+                    <input
+                      type="checkbox"
+                      className="card-checkbox"
+                      checked={selectedRows.has(item.barcode)}
+                      onChange={() => {}}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  <div className="card-name" title={item.name}>{item.name}</div>
+                  <div className="card-price">单价 ¥{item.price.toFixed(2)}</div>
+                  <div className="card-quantity">
+                    <button
+                      className="qty-btn"
+                      onClick={(e) => { e.stopPropagation(); updateQuantity(item.barcode, -1); }}
+                    >
+                      −
+                    </button>
+                    <span className="quantity">{item.quantity}</span>
+                    <button
+                      className="qty-btn"
+                      onClick={(e) => { e.stopPropagation(); updateQuantity(item.barcode, 1); }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="card-subtotal">¥{(item.price * item.quantity).toFixed(2)}</div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
-        <div className="footer">
-          <div className="total-section">
-            <span className="total-label">合计：</span>
-            <span className="total-amount">¥{totalAmount.toFixed(2)}</span>
+        {/* 右侧：结算面板 */}
+        <div className="checkout-panel">
+          <div className="checkout-summary">
+            <div className="summary-title">订单汇总</div>
+            <div className="summary-details">
+              <div className="summary-item">
+                <span>商品种类</span>
+                <span>{cart.length} 种</span>
+              </div>
+              <div className="summary-item">
+                <span>商品数量</span>
+                <span>{totalItems} 件</span>
+              </div>
+              <div className="summary-divider"></div>
+              <div className="summary-total">
+                <span>合计</span>
+                <span className="total-price">¥{totalAmount.toFixed(2)}</span>
+              </div>
+            </div>
           </div>
-          
-          <div className="action-buttons">
+
+          <div className="checkout-actions">
             <button
-              className="btn btn-secondary"
-              onClick={clearCart}
+              className="btn btn-checkout"
+              onClick={() => setShowConfirmModal(true)}
               disabled={cart.length === 0}
             >
-              清空
+              💳 结算
             </button>
+            
+            <div className="secondary-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={undoLast}
+                disabled={cart.length === 0}
+                title="撤销上一步"
+              >
+                ↩️ 撤销
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={clearCart}
+                disabled={cart.length === 0}
+                title="清空购物车"
+              >
+                🗑️ 清空
+              </button>
+            </div>
+            
             <button
-              className="btn btn-secondary"
-              onClick={undoLast}
-              disabled={cart.length === 0}
-            >
-              撤销
-            </button>
-            <button
-              className="btn btn-danger"
+              className="btn btn-danger-outline"
               onClick={deleteSelected}
               disabled={selectedRows.size === 0}
             >
               删除选中 ({selectedRows.size})
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => setShowConfirmModal(true)}
-              disabled={cart.length === 0}
-            >
-              提交订单
             </button>
           </div>
         </div>

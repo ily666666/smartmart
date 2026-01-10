@@ -62,6 +62,29 @@
     <!-- 编辑/添加模式 -->
     <view class="edit-mode" wx:if="{{mode === 'edit' || mode === 'add'}}">
       <view class="form-card">
+        <!-- 商品图片上传 -->
+        <view class="form-item">
+          <text class="form-label">商品图片</text>
+          <view class="image-upload-area" bindtap="chooseImage">
+            <block wx:if="{{tempImagePath || imageBase64 || product.image_url}}">
+              <image 
+                class="upload-preview" 
+                src="{{tempImagePath || imageBase64 || product.image_url}}" 
+                mode="aspectFit"
+              />
+              <view class="image-change-hint">点击更换图片</view>
+            </block>
+            <view class="upload-placeholder" wx:else>
+              <text class="upload-icon">📷</text>
+              <text class="upload-text">点击上传图片</text>
+              <text class="upload-hint">支持拍照或从相册选择</text>
+            </view>
+          </view>
+          <view class="image-actions" wx:if="{{tempImagePath || imageBase64 || product.image_url}}">
+            <view class="image-action-btn" bindtap="removeImage">🗑️ 移除图片</view>
+          </view>
+        </view>
+
         <!-- 条码 -->
         <view class="form-item">
           <text class="form-label">商品条码 *</text>

@@ -19,7 +19,9 @@ Page({
     categories: [],
     loading: false,
     saving: false,
-    imageBase64: '' // 用于 显示图片
+    imageBase64: '', // 用于 显示图片
+    tempImagePath: '', // 临时选择的图片路径
+    uploadedImageUrl: '' // 上传后的图片URL
   },
 
   onLoad(options) {
@@ -155,6 +157,85 @@ Page({
     })
   },
 
+  // 选择图片
+  chooseImage() {
+    wx.showActionSheet({
+      itemList: ['拍照', '从相册选择'],
+      success: (res) => {
+        const sourceType = res.tapIndex === 0 ? ['camera'] : ['album']
+        wx.chooseMedia({
+          count: 1,
+          mediaType: ['image'],
+          sourceType: sourceType,
+          sizeType: ['compressed'],
+          success: (result) => {
+            const tempFilePath = result.tempFiles[0].tempFilePath
+            this.setData({
+              tempImagePath: tempFilePath,
+              uploadedImageUrl: '' // 清除之前上传的URL
+            })
+          },
+          fail: (err) => {
+            if (!err.errMsg.includes('cancel')) {
+              wx.showToast({ title: '选择图片失败', icon: 'none' })
+            }
+          }
+        })
+      }
+    })
+  },
+
+  // 移除图片
+  removeImage() {
+    wx.showModal({
+      title: '确认移除',
+      content: '确定要移除商品图片吗？',
+      success: (res) => {
+        if (res.confirm) {
+          this.setData({
+            tempImagePath: '',
+            uploadedImageUrl: '',
+            imageBase64: '',
+            'product.image_url': ''
+          })
+        }
+      }
+    })
+  },
+
+  // 上传图片到服务器
+  async uploadImage(filePath) {
+    const apiUrl = getApiUrl(app.globalData.serverUrl)
+    
+    return new Promise((resolve, reject) => {
+      wx.uploadFile({
+        url: `${apiUrl}/products/upload_image`,
+        filePath: filePath,
+        name: 'file',
+        success: (res) => {
+          if (res.statusCode === 200) {
+            try {
+              const data = JSON.parse(res.data)
+              resolve(data.image_url)
+            } catch (e) {
+              reject(new Error('解析响应失败'))
+            }
+          } else {
+            try {
+              const errData = JSON.parse(res.data)
+              reject(new Error(errData.detail || '上传失败'))
+            } catch (e) {
+              reject(new Error('上传失败'))
+            }
+          }
+        },
+        fail: (err) => {
+          reject(new Error(err.errMsg || '上传失败'))
+        }
+      })
+    })
+  },
+
   // 进入编辑模式
   enterEditMode() {
     this.setData({ mode: 'edit' })
@@ -175,7 +256,7 @@ Page({
 
   // 保存商品
   async saveProduct() {
-    const { product, mode, productId } = this.data
+    const { product, mode, productId, tempImagePath } = this.data
     
     // 验证
     if (!product.barcode.trim()) {
@@ -196,6 +277,25 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       
+      // 如果有新选择的图片，先上传
+      let imageUrl = product.image_url
+      if (tempImagePath) {
+        wx.showLoading({ title: '上传图片中...' })
+        try {
+          imageUrl = await this.uploadImage(tempImagePath)
+          this.setData({ 
+            uploadedImageUrl: imageUrl,
+            tempImagePath: '' 
+          })
+        } catch (uploadErr) {
+          wx.hideLoading()
+          wx.showToast({ title: uploadErr.message || '图片上传失败', icon: 'none' })
+          this.setData({ saving: false })
+          return
+        }
+        wx.hideLoading()
+      }
+      
       if (mode === 'add') {
         // 创建商品 - 手动构建 URL 编码参数（小程序不支持 URLSearchParams）
         const formData = {
@@ -207,6 +307,9 @@ Page({
         }
         if (product.cost_price) {
           formData.cost_price = product.cost_price
+        }
+        if (imageUrl) {
+          formData.image_url = imageUrl
         }
         
         // 将对象转为 URL 编码字符串
@@ -243,6 +346,9 @@ Page({
         }
         if (product.cost_price) {
           formData.cost_price = product.cost_price
+        }
+        if (imageUrl) {
+          formData.image_url = imageUrl
         }
         
         const res = await new Promise((resolve, reject) => {

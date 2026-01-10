@@ -38,15 +38,15 @@ const Products = () => {
     const listHeaderHeight = 50;   // 列表表头
     const paginationHeight = 80;   // 分页控件
     const padding = 100;           // 各种边距
-    const rowHeight = 56;          // 每行商品高度
+    const rowHeight = 72;          // 每行商品高度（含缩略图）
     
     const windowHeight = window.innerHeight;
     const availableHeight = windowHeight - headerHeight - scanBarHeight - searchBarHeight 
                            - statsHeight - listHeaderHeight - paginationHeight - padding;
     
-    // 计算能显示的行数，最少5行，最多20行
+    // 计算能显示的行数，最少5行，最多15行
     const calculatedSize = Math.floor(availableHeight / rowHeight);
-    const newPageSize = Math.max(5, Math.min(20, calculatedSize));
+    const newPageSize = Math.max(5, Math.min(15, calculatedSize));
     
     return newPageSize;
   }, []);
@@ -810,6 +810,7 @@ const Products = () => {
             <div className="products-list">
               <div className="list-header">
                 <span className="col-index">#</span>
+                <span className="col-thumb">图片</span>
                 <span className="col-name">商品名称</span>
                 <span className="col-category">分类</span>
                 <span className="col-barcode">条码</span>
@@ -827,10 +828,21 @@ const Products = () => {
                   }}
                 >
                   <span className="col-index">{(currentPage - 1) * pageSize + index + 1}</span>
-                  <span className="col-name">
-                    {product.image_url && <span className="has-image">🖼</span>}
-                    {product.name}
+                  <span className="col-thumb">
+                    {product.image_url ? (
+                      <img 
+                        src={`${API_BASE_URL}${product.image_url}`} 
+                        alt={product.name}
+                        className="product-thumb"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <span className={`thumb-placeholder ${product.image_url ? 'hidden' : ''}`}>📦</span>
                   </span>
+                  <span className="col-name">{product.name}</span>
                   <span className="col-category">{product.category}</span>
                   <span className="col-barcode">{product.barcode}</span>
                   <span className="col-price">¥{product.price.toFixed(2)}</span>

@@ -52,6 +52,7 @@
       "desc": "用于扫码识别商品"
     }
   },
+  "__usePrivacyCheck__": true,
   "style": "v2",
   "sitemapLocation": "sitemap.json"
 }

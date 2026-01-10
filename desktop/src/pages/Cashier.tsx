@@ -716,24 +716,28 @@ const Cashier = () => {
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>
-                  <div className="card-name" title={item.name}>{item.name}</div>
-                  <div className="card-price">单价 ¥{item.price.toFixed(2)}</div>
-                  <div className="card-quantity">
-                    <button
-                      className="qty-btn"
-                      onClick={(e) => { e.stopPropagation(); updateQuantity(item.barcode, -1); }}
-                    >
-                      −
-                    </button>
-                    <span className="quantity">{item.quantity}</span>
-                    <button
-                      className="qty-btn"
-                      onClick={(e) => { e.stopPropagation(); updateQuantity(item.barcode, 1); }}
-                    >
-                      +
-                    </button>
+                  <div className="card-info">
+                    <div className="card-name" title={item.name}>{item.name}</div>
+                    <div className="card-price">¥{item.price.toFixed(2)}</div>
                   </div>
-                  <div className="card-subtotal">¥{(item.price * item.quantity).toFixed(2)}</div>
+                  <div className="card-bottom">
+                    <div className="card-quantity">
+                      <button
+                        className="qty-btn"
+                        onClick={(e) => { e.stopPropagation(); updateQuantity(item.barcode, -1); }}
+                      >
+                        −
+                      </button>
+                      <span className="quantity">{item.quantity}</span>
+                      <button
+                        className="qty-btn"
+                        onClick={(e) => { e.stopPropagation(); updateQuantity(item.barcode, 1); }}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <div className="card-subtotal">¥{(item.price * item.quantity).toFixed(2)}</div>
+                  </div>
                 </div>
               ))}
             </div>

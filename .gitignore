@@ -49,9 +49,10 @@ backend/dist/
 *.log
 .cache/
 
-# 模型文件（太大，用户自行下载）
-models/
-backend/models/
+# AI模型文件（太大，用户自行下载）
+# 注意：只匹配根目录下的 models，不影响 backend/app/models/ 代码目录
+/models/
+/backend/models/
 *.bin
 *.pt
 *.pth

@@ -365,6 +365,55 @@
   }
 }
 
+/* ========== 设置图标（齿轮） ========== */
+.icon-settings {
+  flex-direction: column;
+}
+
+.gear {
+  width: 34rpx;
+  height: 34rpx;
+  background: #999999;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.tab-bar-item.active .gear {
+  background: #4f46e5;
+  animation: gearRotate 2s linear infinite;
+}
+
+.gear-inner {
+  width: 14rpx;
+  height: 14rpx;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+.gear::before {
+  content: '';
+  position: absolute;
+  width: 42rpx;
+  height: 42rpx;
+  border: 4rpx solid #999999;
+  border-radius: 50%;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.tab-bar-item.active .gear::before {
+  border-color: #4f46e5;
+}
+
+@keyframes gearRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* ========== 识别图标（眼睛，保留兼容） ========== */
 .eye-outer {
   width: 40rpx;

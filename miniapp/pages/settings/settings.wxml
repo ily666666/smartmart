@@ -1,0 +1,150 @@
+<!--pages/settings/settings.wxml - 设置页面-->
+<view class="settings-page">
+  <!-- 服务器配置 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="section-icon">🔗</text>
+      <text>服务器配置</text>
+    </view>
+    <view class="card">
+      <view class="form-group">
+        <text class="label">服务器地址</text>
+        <input
+          class="input"
+          type="text"
+          value="{{inputServerUrl}}"
+          placeholder="例: example.oicp.net:12345"
+          bindinput="onServerUrlInput"
+        />
+        <text class="hint">支持域名或IP地址，如花生壳映射地址</text>
+      </view>
+
+      <view class="form-group">
+        <text class="label">连接密码 {{authRequired ? '（必填）' : '（如已设置）'}}</text>
+        <input
+          class="input"
+          type="text"
+          password="{{true}}"
+          value="{{inputApiKey}}"
+          placeholder="输入服务器连接密码"
+          bindinput="onApiKeyInput"
+        />
+        <text class="hint">在服务器后台设置的 API 连接密码，防止他人访问</text>
+      </view>
+
+      <view class="btn-row">
+        <view class="btn-test {{testing ? 'loading' : ''}}" bindtap="testConnection">
+          <text>{{testing ? '测试中...' : '测试连接'}}</text>
+        </view>
+        <view class="btn-save" bindtap="saveServerUrl">
+          <text>保存</text>
+        </view>
+      </view>
+
+      <!-- 连接状态 -->
+      <view class="conn-result" wx:if="{{serverUrl}}">
+        <view class="conn-row">
+          <text class="conn-label">当前服务器</text>
+          <text class="conn-value">{{serverUrl}}</text>
+        </view>
+        <view class="conn-row">
+          <text class="conn-label">连接状态</text>
+          <view class="conn-status-badge {{serverConnected ? 'ok' : 'fail'}}">
+            <view class="status-dot"></view>
+            <text>{{serverConnected ? '已连接' : '未连接'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="clear-config" wx:if="{{serverUrl}}" bindtap="clearServerConfig">
+        <text>清除服务器配置</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 桌面端同步（可选） -->
+  <view class="section">
+    <view class="section-title">
+      <text class="section-icon">🖥️</text>
+      <text>桌面端同步</text>
+      <text class="section-tag">可选</text>
+    </view>
+    <view class="card">
+      <text class="card-desc">连接桌面端后，小程序扫码可实时同步到桌面收银台</text>
+
+      <view wx:if="{{!wsConnected}}">
+        <view class="btn-pair" bindtap="scanToPairDesktop">
+          <text class="btn-pair-icon">📱</text>
+          <text>{{wsConnecting ? '连接中...' : '扫码配对桌面端'}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{wsConnected}}" class="ws-status">
+        <view class="ws-connected">
+          <text class="ws-dot">🟢</text>
+          <text>桌面端已连接</text>
+        </view>
+        <view class="btn-disconnect" bindtap="disconnectWS">
+          <text>断开</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 更多功能 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="section-icon">📊</text>
+      <text>更多功能</text>
+    </view>
+    <view class="card menu-card">
+      <view class="menu-item" bindtap="goToData">
+        <text class="menu-icon">📈</text>
+        <text class="menu-text">数据中心</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goToReports">
+        <text class="menu-icon">📋</text>
+        <text class="menu-text">报表统计</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goToAnalysis">
+        <text class="menu-icon">🔍</text>
+        <text class="menu-text">库存分析</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 设备信息 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="section-icon">📱</text>
+      <text>设备信息</text>
+    </view>
+    <view class="card">
+      <view class="info-row">
+        <text class="info-label">设备ID</text>
+        <view class="info-value-wrap">
+          <text class="info-value mono">{{deviceId}}</text>
+          <text class="copy-btn" bindtap="copyDeviceId">复制</text>
+        </view>
+      </view>
+      <view class="info-row">
+        <text class="info-label">版本</text>
+        <text class="info-value">v{{version}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 其他操作 -->
+  <view class="section">
+    <view class="card menu-card">
+      <view class="menu-item" bindtap="clearCache">
+        <text class="menu-icon">🗑️</text>
+        <text class="menu-text">清除缓存</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+  </view>
+</view>

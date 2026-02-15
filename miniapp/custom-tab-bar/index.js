@@ -6,8 +6,8 @@ Component({
     list: [
       {
         pagePath: "/pages/index/index",
-        text: "首页",
-        icon: "home"
+        text: "收银",
+        icon: "scan"
       },
       {
         pagePath: "/pages/products/products",
@@ -25,9 +25,9 @@ Component({
         icon: "order"
       },
       {
-        pagePath: "/pages/data/data",
-        text: "数据",
-        icon: "data"
+        pagePath: "/pages/settings/settings",
+        text: "设置",
+        icon: "settings"
       }
     ]
   },

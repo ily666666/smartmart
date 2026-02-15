@@ -339,11 +339,11 @@ Page({
     if (!app.globalData.wsConnected) {
       wx.showModal({
         title: '未连接服务器',
-        content: '请先在首页连接服务器',
-        confirmText: '去连接',
+        content: '请先在设置页面配置服务器地址',
+        confirmText: '去设置',
         success: (res) => {
           if (res.confirm) {
-            wx.switchTab({ url: '/pages/index/index' })
+            wx.switchTab({ url: '/pages/settings/settings' })
           }
         }
       })

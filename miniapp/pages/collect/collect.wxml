@@ -3,7 +3,7 @@
   <view class="status-bar {{wsConnected ? 'connected' : 'disconnected'}}">
     <view class="status-dot"></view>
     <text>{{wsConnected ? '已连接服务器' : '未连接服务器'}}</text>
-    <text class="status-hint" wx:if="{{!wsConnected}}">请先在首页连接</text>
+    <text class="status-hint" wx:if="{{!wsConnected}}">请在设置中配置服务器</text>
   </view>
 
   <!-- 功能入口 -->

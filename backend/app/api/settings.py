@@ -40,6 +40,7 @@ class PasswordReset(BaseModel):
     new_password: str
 
 
+
 # ========== 辅助函数 ==========
 
 def get_or_create_settings(db: Session) -> SystemSettings:
@@ -142,3 +143,5 @@ async def reset_to_default(db: Session = Depends(get_db)):
     settings.password = "admin"
     db.commit()
     return {"success": True, "message": "密码已重置为默认值 admin"}
+
+

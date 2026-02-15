@@ -142,7 +142,21 @@ Page({
         })
         
         // 加载图片的 base64（ 显示图片）
-        this.loadProductImagesBase64(newProducts)
+        if (newProducts.length > 0) {
+          this.loadProductImagesBase64(newProducts)
+        }
+      } else {
+        // 非 200 响应（如 404 未找到），清空结果并重置 loading 状态
+        console.warn('商品请求返回非200状态:', res.statusCode, res.data)
+        this.setData({
+          products: refresh ? [] : this.data.products,
+          totalCount: 0,
+          hasMore: false,
+          loading: false
+        })
+        if (searchQuery) {
+          wx.showToast({ title: '未找到相关商品', icon: 'none' })
+        }
       }
     } catch (error) {
       console.error('加载商品失败:', error)
@@ -218,11 +232,11 @@ Page({
     if (!app.globalData.wsConnected) {
       wx.showModal({
         title: '未连接',
-        content: '请先在首页连接服务器',
-        confirmText: '去连接',
+        content: '请先在设置页面配置服务器地址',
+        confirmText: '去设置',
         success: (res) => {
           if (res.confirm) {
-            wx.switchTab({ url: '/pages/index/index' })
+            wx.switchTab({ url: '/pages/settings/settings' })
           }
         }
       })

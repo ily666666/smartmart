@@ -16,10 +16,13 @@ from app.models.product import Product, PRODUCT_CATEGORIES
 from app.config import settings
 from pydantic import BaseModel
 
-# 创建静态文件目录
-STATIC_DIR = Path("static")
+# 使用配置中的静态文件目录
+STATIC_DIR = settings.STATIC_DIR
 IMAGES_DIR = STATIC_DIR / "images" / "products"
-IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+except Exception as e:
+    print(f"⚠️ 创建图片目录失败: {e}")
 
 router = APIRouter()
 
@@ -79,12 +82,6 @@ async def search_products(
     products = db.query(Product).filter(
         Product.name.like(f"%{q}%")
     ).limit(10).all()
-    
-    if not products:
-        raise HTTPException(
-            status_code=404,
-            detail=f"未找到包含 '{q}' 的商品"
-        )
     
     return {
         "type": "fuzzy",

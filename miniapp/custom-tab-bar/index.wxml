@@ -7,11 +7,14 @@
     data-index="{{index}}"
     bindtap="switchTab"
   >
-    <!-- 首页图标 -->
-    <view class="icon icon-home" wx:if="{{item.icon === 'home'}}">
-      <view class="house-roof"></view>
-      <view class="house-body">
-        <view class="house-door"></view>
+    <!-- 收银图标（扫码框） -->
+    <view class="icon icon-scan" wx:if="{{item.icon === 'scan'}}">
+      <view class="scan-frame">
+        <view class="corner tl"></view>
+        <view class="corner tr"></view>
+        <view class="corner bl"></view>
+        <view class="corner br"></view>
+        <view class="scan-line"></view>
       </view>
     </view>
     
@@ -41,23 +44,27 @@
       </view>
     </view>
     
-    <!-- 数据图标 -->
+    <!-- 设置图标（齿轮） -->
+    <view class="icon icon-settings" wx:if="{{item.icon === 'settings'}}">
+      <view class="gear">
+        <view class="gear-inner"></view>
+      </view>
+    </view>
+
+    <!-- 首页图标（保留兼容） -->
+    <view class="icon icon-home" wx:if="{{item.icon === 'home'}}">
+      <view class="house-roof"></view>
+      <view class="house-body">
+        <view class="house-door"></view>
+      </view>
+    </view>
+    
+    <!-- 数据图标（保留兼容） -->
     <view class="icon icon-data" wx:if="{{item.icon === 'data'}}">
       <view class="chart-container">
         <view class="chart-bar bar1"></view>
         <view class="chart-bar bar2"></view>
         <view class="chart-bar bar3"></view>
-      </view>
-    </view>
-    
-    <!-- 扫码图标（保留兼容） -->
-    <view class="icon icon-scan" wx:if="{{item.icon === 'scan'}}">
-      <view class="scan-frame">
-        <view class="corner tl"></view>
-        <view class="corner tr"></view>
-        <view class="corner bl"></view>
-        <view class="corner br"></view>
-        <view class="scan-line"></view>
       </view>
     </view>
     

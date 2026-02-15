@@ -45,8 +45,16 @@ impl BackendProcess {
 
         println!("   路径: {:?}", resource_path);
 
-        // 启动 backend 进程
-        let child = Command::new(resource_path)
+        // 获取 backend.exe 所在目录作为工作目录
+        let backend_dir = resource_path
+            .parent()
+            .ok_or("无法获取 Backend 目录")?
+            .to_path_buf();
+        println!("   工作目录: {:?}", backend_dir);
+
+        // 启动 backend 进程，设置工作目录为 exe 所在目录
+        let child = Command::new(&resource_path)
+            .current_dir(&backend_dir)  // 关键：设置工作目录
             .args(&[
                 "--host", "0.0.0.0",
                 "--port", &port.to_string(),

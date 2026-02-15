@@ -38,10 +38,13 @@ dev = [
     "pytest-asyncio>=0.21.0",
 ]
 
-# GPU 支持（可选）
+# GPU 支持
 gpu = [
     "faiss-gpu>=1.7.4",
 ]
+
+[tool.pip]
+extra-index-url = ["https://download.pytorch.org/whl/cu121"]
 
 [build-system]
 requires = ["hatchling"]

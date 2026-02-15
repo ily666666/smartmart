@@ -282,7 +282,7 @@ Page({
   manualScan() {
     if (!app.globalData.wsConnected) {
       wx.showToast({
-        title: '请先连接服务器',
+        title: '请先配置服务器',
         icon: 'none'
       })
       return
@@ -306,9 +306,9 @@ Page({
     })
   },
 
-  goHome() {
+  goSettings() {
     wx.switchTab({
-      url: '/pages/index/index'
+      url: '/pages/settings/settings'
     })
   },
 

@@ -38,8 +38,8 @@
       <!-- 未连接提示 -->
       <view class="camera-placeholder" wx:if="{{!wsConnected}}">
         <text class="placeholder-icon">🔌</text>
-        <text class="placeholder-text">请先连接服务器</text>
-        <button class="btn-connect" bindtap="goHome">去连接</button>
+        <text class="placeholder-text">请先配置服务器</text>
+        <button class="btn-connect" bindtap="goSettings">去设置</button>
       </view>
       
       <!-- 相机加载中 -->

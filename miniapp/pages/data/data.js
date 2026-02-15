@@ -23,11 +23,6 @@ Page({
   },
 
   onShow() {
-    // 设置当前 tabBar 选中项
-    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({ selected: 4 })
-    }
-    
     // 更新连接状态
     this.setData({
       wsConnected: app.globalData.wsConnected
@@ -174,11 +169,11 @@ Page({
     if (!app.globalData.wsConnected) {
       wx.showModal({
         title: '未连接',
-        content: '请先在首页连接服务器',
-        confirmText: '去连接',
+        content: '请先在设置页面配置服务器地址',
+        confirmText: '去设置',
         success: (res) => {
           if (res.confirm) {
-            wx.switchTab({ url: '/pages/index/index' })
+            wx.switchTab({ url: '/pages/settings/settings' })
           }
         }
       })

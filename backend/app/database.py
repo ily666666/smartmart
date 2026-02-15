@@ -26,6 +26,7 @@ def get_db():
         db.close()
 
 
+
 def init_sample_data():
     """初始化示例数据"""
     from app.models import Product

@@ -1,181 +1,113 @@
-<!--pages/index/index.wxml-->
-<view class="container">
-  <!-- 顶部状态 -->
-  <view class="header">
-    <text class="title">店小蜜</text>
-    <view class="status">
-      <view class="status-badge {{wsConnected ? 'status-connected' : 'status-disconnected'}}"></view>
-      <text class="status-text">{{wsConnected ? '已连接' : '未连接'}}</text>
+<!--pages/index/index.wxml - 收银台-->
+<view class="cashier-page">
+  <!-- 顶部状态栏 -->
+  <view class="top-bar">
+    <view class="top-bar-left">
+      <text class="top-title">收银台</text>
     </view>
-  </view>
-
-  <!-- 未配置时：扫码连接 -->
-  <view class="connect-card" wx:if="{{!serverUrl && !wsConnected}}">
-    <view class="connect-icon">📱</view>
-    <text class="connect-title">扫码连接桌面端</text>
-    <text class="connect-desc">打开桌面客户端，扫描显示的二维码即可自动连接</text>
-    
-    <button class="btn-scan-connect" bindtap="scanToConnect">
-      <text class="scan-icon">📷</text>
-      <text>扫码连接</text>
-    </button>
-    
-    <view class="manual-toggle" bindtap="toggleManualInput">
-      <text>{{showManualInput ? '收起手动输入' : '手动输入地址'}}</text>
-      <text class="arrow">{{showManualInput ? '▲' : '▼'}}</text>
-    </view>
-  </view>
-
-  <!-- 手动输入（折叠） -->
-  <view class="manual-section" wx:if="{{showManualInput && !serverUrl}}">
-    <view class="card">
-      <view class="form-group">
-        <text class="label">服务器地址（IP:端口）</text>
-        <input 
-          class="input" 
-          type="text" 
-          value="{{inputServerUrl}}"
-          placeholder="例如：192.168.1.100:8000"
-          bindinput="onServerUrlInput"
-        />
+    <view class="top-bar-right">
+      <view class="conn-status {{serverConnected ? 'connected' : 'disconnected'}}">
+        <view class="conn-dot"></view>
+        <text>{{serverConnected ? '已连接' : '未连接'}}</text>
       </view>
-      
-      <view class="form-group">
-        <text class="label">配对 Token（从桌面端获取）</text>
-        <input 
-          class="input" 
-          type="text" 
-          value="{{inputToken}}"
-          placeholder="可选，首次配对需要"
-          bindinput="onTokenInput"
-        />
-      </view>
-      
-      <button class="btn-primary" bindtap="saveConfig">
-        保存并连接
-      </button>
     </view>
   </view>
 
-  <!-- 已配置时：连接状态卡片 -->
-  <view class="status-card" wx:if="{{serverUrl}}">
-    <view class="card">
-      <view class="server-info">
-        <view class="server-row">
-          <text class="server-label">服务器</text>
-          <text class="server-value">{{serverUrl}}</text>
+  <!-- 搜索/扫码区域 -->
+  <view class="search-section">
+    <view class="search-bar">
+      <view class="search-input-wrap">
+        <text class="search-icon">🔍</text>
+        <input
+          class="search-input"
+          placeholder="扫码或输入商品名称/条码"
+          value="{{searchQuery}}"
+          bindinput="onSearchInput"
+          bindconfirm="doSearch"
+          confirm-type="search"
+          disabled="{{searching}}"
+        />
+        <view class="search-loading" wx:if="{{searching}}">
+          <view class="loading-spinner"></view>
         </view>
-        <view class="server-row">
-          <text class="server-label">状态</text>
-          <view class="server-status">
-            <view class="status-dot {{wsConnected ? 'connected' : 'disconnected'}}"></view>
-            <text class="{{wsConnected ? 'text-success' : 'text-danger'}}">{{wsConnected ? '已连接' : (connecting ? '连接中...' : '未连接')}}</text>
+      </view>
+      <view class="scan-btn" bindtap="scanBarcode">
+        <text class="scan-icon">📷</text>
+      </view>
+    </view>
+    <!-- 添加成功提示 -->
+    <view class="add-toast" wx:if="{{lastAddedItem}}">
+      <text>✅ 已添加: {{lastAddedItem}}</text>
+    </view>
+  </view>
+
+  <!-- 购物车区域 -->
+  <view class="cart-section">
+    <view class="cart-header">
+      <text class="cart-title">购物车</text>
+      <text class="cart-count" wx:if="{{totalItems > 0}}">{{totalItems}} 件</text>
+      <text class="cart-clear" wx:if="{{cartItems.length > 0}}" bindtap="clearCart">清空</text>
+    </view>
+
+    <!-- 购物车列表 -->
+    <scroll-view class="cart-list" scroll-y wx:if="{{cartItems.length > 0}}">
+      <view class="cart-item" wx:for="{{cartItems}}" wx:key="id">
+        <view class="item-info">
+          <text class="item-name">{{item.name}}</text>
+          <text class="item-barcode">{{item.barcode}}</text>
+        </view>
+        <view class="item-controls">
+          <view class="qty-control">
+            <view class="qty-btn minus" data-index="{{index}}" bindtap="decreaseQty">
+              <text>-</text>
+            </view>
+            <text class="qty-value">{{item.quantity}}</text>
+            <view class="qty-btn plus" data-index="{{index}}" bindtap="increaseQty">
+              <text>+</text>
+            </view>
+          </view>
+          <view class="item-price-col">
+            <text class="item-unit-price">¥{{item.price}}</text>
+            <text class="item-subtotal">¥{{item.subtotal}}</text>
           </view>
         </view>
-      </view>
-      
-      <!-- 未连接时的操作 -->
-      <view class="server-actions" wx:if="{{!wsConnected}}">
-        <button 
-          class="btn-reconnect-primary" 
-          bindtap="connectWebSocket"
-          disabled="{{connecting}}"
-        >
-          {{connecting ? '连接中...' : '⚡ 快速重连'}}
-        </button>
-      </view>
-      
-      <view class="server-actions-secondary" wx:if="{{!wsConnected && !connecting}}">
-        <text class="action-link" bindtap="scanToConnect">🔄 重新扫码</text>
-        <text class="action-divider">|</text>
-        <text class="action-link" bindtap="toggleManualInput">✏️ 手动输入</text>
-        <text class="action-divider">|</text>
-        <text class="action-link" bindtap="clearSavedServer">清除记录</text>
-      </view>
-      
-      <!-- 手动输入（展开时显示） -->
-      <view class="manual-input-inline" wx:if="{{showManualInput && !wsConnected}}">
-        <view class="form-group">
-          <text class="label-small">服务器地址</text>
-          <input 
-            class="input" 
-            type="text" 
-            value="{{inputServerUrl}}"
-            placeholder="例如：192.168.1.100:8000"
-            bindinput="onServerUrlInput"
-          />
+        <view class="item-delete" data-index="{{index}}" bindtap="removeItem">
+          <text>✕</text>
         </view>
-        <view class="form-group">
-          <text class="label-small">配对 Token</text>
-          <input 
-            class="input" 
-            type="text" 
-            value="{{inputToken}}"
-            placeholder="可选，首次配对需要"
-            bindinput="onTokenInput"
-          />
-        </view>
-        <button class="btn-primary-small" bindtap="saveConfig">
-          保存并连接
-        </button>
       </view>
-      
-      <!-- 已连接时的操作 -->
-      <view class="server-actions" wx:if="{{wsConnected}}">
-        <button 
-          class="btn-disconnect" 
-          bindtap="disconnectOnly"
-        >
-          断开连接
-        </button>
-      </view>
+    </scroll-view>
+
+    <!-- 空购物车 -->
+    <view class="cart-empty" wx:if="{{cartItems.length === 0}}">
+      <text class="empty-icon">🛒</text>
+      <text class="empty-text">购物车为空</text>
+      <text class="empty-hint">扫描条码或搜索商品添加</text>
     </view>
   </view>
 
-  <!-- 设备信息 -->
-  <view class="device-section">
-    <view class="card">
-      <text class="card-title">设备信息</text>
-      <view class="device-id">
-        <text class="device-id-text">{{deviceId}}</text>
-        <button class="btn-copy" size="mini" bindtap="copyDeviceId">复制</button>
-      </view>
+  <!-- 底部结算栏 -->
+  <view class="checkout-bar">
+    <view class="checkout-info">
+      <text class="checkout-label">合计：</text>
+      <text class="checkout-amount">¥{{totalAmount}}</text>
+    </view>
+    <view
+      class="checkout-btn {{cartItems.length === 0 || checkingOut ? 'disabled' : ''}}"
+      bindtap="checkout"
+    >
+      <text>{{checkingOut ? '结账中...' : '结账'}}</text>
     </view>
   </view>
 
-  <!-- 快速操作（已连接时显示） -->
-  <view class="action-section" wx:if="{{wsConnected}}">
-    <view class="action-grid">
-      <view class="action-item" bindtap="goToScan">
-        <view class="action-icon">🔍</view>
-        <text class="action-text">扫码录入</text>
-      </view>
-      <view class="action-item" bindtap="goToVision">
-        <view class="action-icon">👁️</view>
-        <text class="action-text">外观识别</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 使用说明 -->
-  <view class="help-section" wx:if="{{!serverUrl}}">
-    <view class="card">
-      <text class="card-title">💡 使用说明</text>
-      <view class="desc">
-        <text>1. 确保手机和电脑在同一 WiFi 网络</text>
-        <text>2. 打开桌面端 SmartMart 收银软件</text>
-        <text>3. 点击上方"扫码连接"按钮</text>
-        <text>4. 扫描桌面端显示的二维码</text>
-        <text>5. 连接成功后即可开始扫码</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 调试信息（可选） -->
-  <view class="debug-section" wx:if="{{lastMessage && false}}">
-    <view class="card">
-      <text class="card-title">调试信息</text>
-      <text class="code">{{lastMessage}}</text>
+  <!-- 未配置服务器提示 -->
+  <view class="no-server-overlay" wx:if="{{!serverUrl}}">
+    <view class="no-server-card">
+      <text class="no-server-icon">⚙️</text>
+      <text class="no-server-title">请先配置服务器</text>
+      <text class="no-server-desc">前往设置页面配置服务器地址后即可使用收银功能</text>
+      <navigator url="/pages/settings/settings" open-type="switchTab" class="btn-go-settings">
+        前往设置
+      </navigator>
     </view>
   </view>
 </view>

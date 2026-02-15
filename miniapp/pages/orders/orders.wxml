@@ -92,7 +92,7 @@
   <view class="empty-state" wx:if="{{!wsConnected}}">
     <text class="empty-icon">🔌</text>
     <text class="empty-text">未连接服务器</text>
-    <text class="empty-hint">请先在首页连接服务器</text>
+    <text class="empty-hint">请先在设置页面配置服务器</text>
   </view>
 
   <!-- 加载中 -->

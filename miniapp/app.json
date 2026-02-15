@@ -11,7 +11,8 @@
     "pages/order-detail/order-detail",
     "pages/data/data",
     "pages/reports/reports",
-    "pages/analysis/analysis"
+    "pages/analysis/analysis",
+    "pages/settings/settings"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -27,7 +28,7 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "text": "收银"
       },
       {
         "pagePath": "pages/products/products",
@@ -42,8 +43,8 @@
         "text": "订单"
       },
       {
-        "pagePath": "pages/data/data",
-        "text": "数据"
+        "pagePath": "pages/settings/settings",
+        "text": "设置"
       }
     ]
   },

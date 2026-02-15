@@ -8,6 +8,7 @@ from pathlib import Path
 
 from app.database import engine, Base, init_sample_data
 from app.api import products, websocket_api, orders, vision, reports, analysis, pairing, recognition, samples, database, settings
+from app.middleware import APIKeyMiddleware
 
 # 确保静态文件目录存在
 STATIC_DIR = Path("static")
@@ -57,15 +58,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS 配置（局域网访问 - 开发环境）
-# ⚠️ 注意：生产环境请限制 allow_origins
+# CORS 配置
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 允许所有来源（局域网内）
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"],  # 允许所有请求头（包括 X-API-Key）
 )
+
+# API Key 认证中间件（在 CORS 之后添加）
+# 设置了连接密码后，所有远程请求都需要携带 X-API-Key 头
+app.add_middleware(APIKeyMiddleware)
 
 # 挂载静态文件目录（用于访问上传的图片）
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -98,8 +102,14 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """健康检查"""
-    return {"status": "ok", "message": "服务运行正常"}
+    """健康检查（不需要密码）"""
+    from app.config import settings as app_settings
+    
+    return {
+        "status": "ok",
+        "message": "服务运行正常",
+        "auth_required": bool(app_settings.API_KEY)
+    }
 
 
 def get_base_path():

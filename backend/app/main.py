@@ -42,8 +42,11 @@ async def lifespan(app: FastAPI):
     print("✅ 数据库初始化完成")
     
     # 预热 AI 模型
-    # 嫌慢可以把这一行注释掉，改为首次识别时再加载
-    #warmup_ai_models()
+    from app.config import settings as app_settings
+    if app_settings.WARMUP_AI:
+        warmup_ai_models()
+    else:
+        print("⏭️ AI 模型预热已跳过（WARMUP_AI=false），首次识别时再加载")
     
     yield
     

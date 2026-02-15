@@ -27,6 +27,7 @@ services:
       - API_KEY=${API_KEY:-smartmart2026}
       - DEBUG=${DEBUG:-false}
       - CLIP_MODEL_NAME=${CLIP_MODEL_NAME:-openai/clip-vit-base-patch32}
+      - WARMUP_AI=${WARMUP_AI:-true}    # 启动时预热AI模型，false则首次识别时加载
       - TZ=Asia/Shanghai
 
     # 数据持久化（注意：首次启动前需先 touch smartmart.db）

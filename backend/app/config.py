@@ -58,6 +58,9 @@ class Settings:
     # 设置后，所有 API 请求必须在请求头带上 X-API-Key
     API_KEY = os.getenv("API_KEY", "smartmart2026")
     
+    # 启动时预热 AI 模型（避免首次识别慢，但启动会多等几十秒）
+    WARMUP_AI = os.getenv("WARMUP_AI", "true").lower() == "true"
+    
     # 调试
     DEBUG = os.getenv("DEBUG", "true").lower() == "true"
 

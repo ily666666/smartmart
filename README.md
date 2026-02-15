@@ -137,28 +137,74 @@ python scripts/build_index.py
 ```bash
 cd backend
 
+# 首次启动前，创建空数据库文件（避免 Docker 把它当目录）
+touch smartmart.db
+
 # 构建并启动（首次构建约 10-20 分钟）
 docker compose up -d
 
 # 查看日志
 docker compose logs -f
-
-# 停止服务
-docker compose down
 ```
 
-### 自定义配置
-
-通过环境变量覆盖默认配置：
+### 常用命令
 
 ```bash
-# 修改 API 密码
+# ---- 日常操作 ----
+docker compose up -d              # 启动（后台运行）
+docker compose down               # 停止
+docker compose restart            # 重启
+docker compose up -d --build      # 代码改了，重新构建并启动
+
+# ---- 查看状态 ----
+docker compose ps                 # 看容器是否在运行
+docker compose logs -f            # 看实时日志（Ctrl+C 退出）
+docker compose logs --tail 100    # 看最后 100 行日志
+docker stats smartmart-backend    # 看 CPU / 内存 / GPU 占用
+
+# ---- 进入容器 ----
+docker exec -it smartmart-backend bash          # 进容器命令行
+docker exec smartmart-backend nvidia-smi        # 看 GPU 是否被识别
+docker exec smartmart-backend ls -lh /app       # 查看容器内文件
+
+# ---- 清理 ----
+docker compose down               # 停止并删除容器（不删镜像，数据不丢）
+docker compose down --rmi local   # 同时删除镜像（下次要重新构建）
+docker image prune -f             # 清理无用悬空镜像，释放磁盘
+
+# ---- 数据备份 ----
+cp smartmart.db smartmart.db.bak  # 备份数据库
+# 完整备份（数据库 + 图片 + 索引）
+tar czf smartmart-backup-$(date +%Y%m%d).tar.gz smartmart.db data/ static/ uploads/
+```
+
+### 环境变量配置
+
+通过环境变量覆盖默认配置，不用改代码：
+
+```bash
+# 单个变量
 API_KEY=my_secret docker compose up -d
 
-# 或者创建 .env 文件
-echo "API_KEY=my_secret" > .env
+# 多个变量一起
+API_KEY=my_secret WARMUP_AI=false docker compose up -d --build
+
+# 或者创建 .env 文件（推荐）
+cat > .env << EOF
+API_KEY=my_secret
+WARMUP_AI=true
+DEBUG=false
+EOF
 docker compose up -d
 ```
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `API_KEY` | `smartmart2026` | 连接密码，小程序/桌面端需要填这个密码 |
+| `WARMUP_AI` | `true` | 启动时预热 AI 模型（`false` 则首次识别时加载） |
+| `CLIP_MODEL_NAME` | `openai/clip-vit-base-patch32` | CLIP 模型名称 |
+| `DEBUG` | `false` | 调试模式 |
+| `TZ` | `Asia/Shanghai` | 时区 |
 
 ### 数据持久化
 
@@ -166,11 +212,28 @@ docker compose up -d
 
 | 挂载路径 | 说明 |
 |----------|------|
+| `./smartmart.db` | SQLite 数据库（首次启动前需 `touch smartmart.db`） |
 | `./data` | FAISS 索引 + 样本图片 |
 | `./models` | CLIP 模型缓存（~350MB，首次启动自动下载） |
 | `./static` | 商品图片 |
 | `./uploads` | 上传文件 |
-| `./smartmart.db` | SQLite 数据库 |
+
+### 故障排查
+
+```bash
+# 容器起不来，看完整日志
+docker compose logs --no-log-prefix
+
+# 看容器健康状态
+docker inspect smartmart-backend --format='{{.State.Health.Status}}'
+
+# 看端口映射
+docker port smartmart-backend
+
+# 数据库打不开 → 检查宿主机上 smartmart.db 是文件不是目录
+ls -la smartmart.db
+# 如果是目录，删掉重建：rm -rf smartmart.db && touch smartmart.db
+```
 
 ## 📦 打包发布
 

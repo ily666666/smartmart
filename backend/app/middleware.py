@@ -34,6 +34,10 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request, call_next):
+        # OPTIONS 预检请求直接放行（让 CORS 中间件处理）
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         path = request.url.path
 
         # 豁免路径
@@ -48,7 +52,13 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         if not settings.API_KEY:
             return await call_next(request)
 
-        # 校验密码
+        # 本地请求（localhost / 127.0.0.1）不需要密码
+        # 桌面端和后端在同一台机器上，无需认证
+        client_host = request.client.host if request.client else ""
+        if client_host in ("127.0.0.1", "::1", "localhost"):
+            return await call_next(request)
+
+        # 远程请求：校验密码
         request_key = request.headers.get("X-API-Key", "")
         if request_key != settings.API_KEY:
             return JSONResponse(

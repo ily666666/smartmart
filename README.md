@@ -1,69 +1,105 @@
 # SmartMart AI 智能收银系统
 
-🛒 一款集成 AI 视觉识别的智能零售收银系统，支持桌面端、微信小程序多端协同。
+一款集成 AI 视觉识别的智能零售收银系统，支持桌面端、微信小程序多端协同。
 
-## ✨ 核心功能
+## 核心功能
 
-### 🤖 AI 商品识别
+### AI 商品识别
 - 基于 **CLIP + FAISS** 的商品外观识别
 - 拍照即可识别商品，无需条码
 - 支持多角度商品图片学习
 - 毫秒级识别响应
 
-### 💻 桌面收银台
+### 桌面收银台
 - 条码扫描 + AI 视觉双模式
 - 购物车管理、快捷结账
+- 搜索商品名称弹出选择框确认
 - 商品管理、库存管理
-- 订单查询、销售报表
+- 订单查询、订单撤销
+- 销售报表、数据分析
 - 支持离线草稿保存
-- 🔐 系统设置密码保护
-- 👁️ 页面可见性控制
-- 🚀 开机自启动支持
+- 系统设置密码保护、页面可见性控制
+- 开机自启动支持
+- **可配置远程/本地服务器**（Settings 页面配置服务器地址、端口、密码）
 
-### 📱 微信小程序
-- **独立收银功能** - 扫码添加商品、购物车管理、一键结账
+### 微信小程序（店小蜜）
+- **独立收银功能**（首页即收银台）- 扫码/搜索添加商品、购物车管理、一键结账
+- 支持持续扫码模式，无需反复打开相机
+- 商品浏览、搜索、详情查看
+- 订单列表、订单详情、撤销订单（商品可自动回到桌面端收银台）
+- 采集中心（扫码录入、AI 拍照识别）
+- 销售报表、数据分析
 - 支持远程服务器连接（花生壳等动态域名映射）
-- 扫码/拍照识别商品
-- 无需开启桌面端即可独立使用
-- 移动便携，随时使用
+- 无需桌面端即可独立使用
 
-### 🔗 多端协同
-- 小程序可独立连接远程服务器，也可与桌面端协同
-- WebSocket 实时通信（可选，用于桌面端同步）
+### 多端协同
+- 小程序可独立连接远程服务器，也可与桌面端联动
+- WebSocket 实时通信（用于桌面端同步，需扫码配对）
 - 支持局域网 IP 和外网域名两种连接方式
 
-## 🏗️ 项目结构
+### 双重认证体系
+
+| 认证方式 | 用途 | 使用场景 |
+|----------|------|---------|
+| **API_KEY（连接密码）** | HTTP API 访问控制 | 所有客户端访问后端接口都需要密码 |
+| **Token（配对令牌）** | WebSocket 联动授权 | 小程序扫桌面端二维码后获取，用于实时同步 |
+
+- 只有密码：可以独立使用小程序收银、商品管理等
+- 密码 + Token：可以额外与桌面端实时联动（撤销订单回到收银台、扫码同步等）
+
+## 项目结构
 
 ```
 SmartMartAI/
 ├── backend/          # Python 后端服务
 │   ├── app/          # FastAPI 应用
-│   ├── data/         # 样本数据和索引
+│   │   ├── api/      # API 路由（商品、订单、报表、配对、WebSocket、AI识别等）
+│   │   ├── models/   # SQLAlchemy 数据模型
+│   │   ├── services/ # 业务逻辑
+│   │   ├── config.py # 配置管理
+│   │   ├── middleware.py # CORS + API_KEY 中间件
+│   │   └── security.py  # Token 管理器
+│   ├── data/         # FAISS 索引 + 样本图片
 │   ├── models/       # CLIP 模型缓存
-│   └── scripts/      # 工具脚本
-├── desktop/          # 桌面客户端
+│   ├── scripts/      # 工具脚本
+│   ├── Dockerfile    # Docker 镜像构建
+│   └── docker-compose.yml
+├── desktop/          # 桌面客户端（Tauri + React）
 │   ├── src/          # React 源代码
+│   │   ├── config.ts # 服务器配置 + apiFetch 封装
+│   │   ├── pages/    # 页面组件
+│   │   └── components/
 │   └── src-tauri/    # Tauri Rust 后端
-├── miniapp/          # 微信小程序
-│   ├── pages/        # 小程序页面
-│   │   ├── index/    # 收银台（首页）
-│   │   ├── settings/ # 设置（服务器配置）
-│   │   └── ...       # 其他功能页面
-│   └── custom-tab-bar/ # 自定义底部导航
-└── README.md         # 本文件
+├── miniapp/          # 微信小程序（店小蜜）
+│   ├── pages/
+│   │   ├── index/        # 收银台（首页）
+│   │   ├── products/     # 商品列表
+│   │   ├── product-detail/ # 商品详情
+│   │   ├── collect/      # 采集中心
+│   │   ├── scan/         # 扫码录入
+│   │   ├── vision/       # AI 拍照识别
+│   │   ├── samples/      # AI 样本管理
+│   │   ├── orders/       # 订单列表
+│   │   ├── order-detail/ # 订单详情（支持撤销）
+│   │   ├── data/         # 数据管理
+│   │   ├── reports/      # 销售报表
+│   │   ├── analysis/     # 数据分析
+│   │   └── settings/     # 设置（服务器配置、扫码配对）
+│   └── custom-tab-bar/   # 自定义底部导航
+└── README.md
 ```
 
-## 🛠️ 技术栈
+## 技术栈
 
 | 模块 | 技术 |
 |------|------|
 | 后端 | Python 3.11+, FastAPI, SQLAlchemy, SQLite |
-| AI 识别 | CLIP (OpenAI), FAISS, PyTorch |
+| AI 识别 | CLIP (OpenAI), FAISS, PyTorch, Transformers |
 | 桌面端 | Tauri, React 18, TypeScript, Vite |
 | 小程序 | 微信小程序原生开发 |
-| 通信 | WebSocket, REST API |
+| 通信 | WebSocket（设备联动）, REST API（数据操作） |
 
-## 🚀 快速开始
+## 快速开始
 
 ### 1. 启动后端服务
 
@@ -74,17 +110,19 @@ cd backend
 conda create -n smartmart python=3.11 -y
 conda activate smartmart
 
-# 方式 A：通过 conda 一次装好 PyTorch + faiss（推荐）
-# GPU 服务器：
+# ===== 安装 GPU 依赖（AI 识别需要）=====
+
+# 方式 A：通过 conda 一次装好（推荐）
 conda install pytorch torchvision torchaudio pytorch-cuda=12.6 -c pytorch -c nvidia -y
 conda install -c pytorch faiss-gpu -y
-# 无 GPU 的机器：
-# conda install pytorch torchvision torchaudio cpuonly -c pytorch -y
-# conda install -c pytorch faiss-cpu -y
 
 # 方式 B：通过 pip 装 PyTorch，conda 装 faiss
 # pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 # conda install -c pytorch faiss-gpu -y
+
+# 无 GPU 的机器：
+# conda install pytorch torchvision torchaudio cpuonly -c pytorch -y
+# conda install -c pytorch faiss-cpu -y
 
 # 安装其他依赖
 pip install -e .
@@ -108,7 +146,15 @@ npm run tauri:dev
 npm run tauri:build
 ```
 
-### 3. 配置 AI 识别（可选）
+### 3. 配置微信小程序
+
+1. 用微信开发者工具导入 `miniapp` 目录
+2. 编译运行后进入 **设置** 页面
+3. 输入服务器地址（如 `192.168.1.100:8000` 或 `example.vicp.fun`）
+4. 输入连接密码（与后端 `API_KEY` 一致）
+5. 点击 **测试连接** → **保存**
+
+### 4. 配置 AI 识别（可选）
 
 ```bash
 cd backend
@@ -122,7 +168,7 @@ python scripts/prepare_samples.py --db ./smartmart.db
 python scripts/build_index.py
 ```
 
-## 🐳 Docker 部署（GPU）
+## Docker 部署（GPU）
 
 适用于有 NVIDIA GPU 的 Linux 服务器，一键启动后端服务。
 
@@ -165,7 +211,6 @@ docker stats smartmart-backend    # 看 CPU / 内存 / GPU 占用
 # ---- 进入容器 ----
 docker exec -it smartmart-backend bash          # 进容器命令行
 docker exec smartmart-backend nvidia-smi        # 看 GPU 是否被识别
-docker exec smartmart-backend ls -lh /app       # 查看容器内文件
 
 # ---- 清理 ----
 docker compose down               # 停止并删除容器（不删镜像，数据不丢）
@@ -174,41 +219,35 @@ docker image prune -f             # 清理无用悬空镜像，释放磁盘
 
 # ---- 数据备份 ----
 cp smartmart.db smartmart.db.bak  # 备份数据库
-# 完整备份（数据库 + 图片 + 索引）
 tar czf smartmart-backup-$(date +%Y%m%d).tar.gz smartmart.db data/ static/ uploads/
 ```
 
 ### 环境变量配置
 
-通过环境变量覆盖默认配置，不用改代码：
-
 ```bash
-# 单个变量
-API_KEY=my_secret docker compose up -d
-
-# 多个变量一起
-API_KEY=my_secret WARMUP_AI=false docker compose up -d --build
-
-# 或者创建 .env 文件（推荐）
+# 创建 .env 文件（推荐）
 cat > .env << EOF
 API_KEY=my_secret
 WARMUP_AI=true
 DEBUG=false
 EOF
 docker compose up -d
+
+# 或直接在命令行传入
+API_KEY=my_secret WARMUP_AI=false docker compose up -d
 ```
 
 | 变量名 | 默认值 | 说明 |
 |--------|--------|------|
-| `API_KEY` | `smartmart2026` | 连接密码，小程序/桌面端需要填这个密码 |
-| `WARMUP_AI` | `true` | 启动时预热 AI 模型（`false` 则首次识别时加载） |
+| `API_KEY` | `smartmart2026` | 连接密码，客户端和小程序需填此密码 |
+| `WARMUP_AI` | `true` | 启动时预热 AI 模型（`false` 则首次识别时才加载） |
 | `CLIP_MODEL_NAME` | `openai/clip-vit-base-patch32` | CLIP 模型名称 |
 | `DEBUG` | `false` | 调试模式 |
-| `TZ` | `Asia/Shanghai` | 时区 |
+| `TZ` | `Asia/Shanghai` | 容器时区 |
 
 ### 数据持久化
 
-以下目录通过 volume 挂载到宿主机，容器重建不丢数据：
+以下通过 volume 挂载到宿主机，容器重建不丢数据：
 
 | 挂载路径 | 说明 |
 |----------|------|
@@ -227,17 +266,14 @@ docker compose logs --no-log-prefix
 # 看容器健康状态
 docker inspect smartmart-backend --format='{{.State.Health.Status}}'
 
-# 看端口映射
-docker port smartmart-backend
-
 # 数据库打不开 → 检查宿主机上 smartmart.db 是文件不是目录
 ls -la smartmart.db
 # 如果是目录，删掉重建：rm -rf smartmart.db && touch smartmart.db
 ```
 
-## 📦 打包发布
+## 打包发布
 
-将项目打包成 Windows 安装包，双击即可安装使用。
+将项目打包成 Windows 安装包。
 
 ### 前置条件
 
@@ -248,125 +284,67 @@ ls -la smartmart.db
 | Rust | Latest | Tauri 编译 |
 | PyInstaller | Latest | Backend 打包 |
 
-```bash
-# 安装 PyInstaller
-cd backend
-pip install pyinstaller
-```
-
 ### 打包步骤
 
-#### 步骤 1: 打包 Backend
-
 ```bash
+# 1. 打包后端
 cd backend
+pip install pyinstaller
 python build_exe.py
-```
+# 生成 dist/smartmart-backend.exe
 
-等待完成，生成 `dist\smartmart-backend.exe`
-
-#### 步骤 2: 复制 Backend.exe
-
-```bash
+# 2. 复制到桌面端目录
 copy backend\dist\smartmart-backend.exe desktop\src-tauri\
-```
 
-#### 步骤 3: 打包 Desktop
-
-```bash
+# 3. 打包桌面端
 cd desktop
 npm install
 npm run tauri build
 ```
 
-首次编译约 10-15 分钟。
+安装包位于 `desktop/src-tauri/target/release/bundle/`：
+- **NSIS**: `nsis/SmartMart_*-setup.exe`（推荐）
+- **MSI**: `msi/SmartMart_*.msi`（企业部署）
 
-### 生成的安装包
-
-打包完成后，安装包位于：
-
-| 格式 | 路径 | 说明 |
-|------|------|------|
-| **NSIS** | `desktop/src-tauri/target/release/bundle/nsis/SmartMart_*-setup.exe` | 推荐，双击安装 |
-| **MSI** | `desktop/src-tauri/target/release/bundle/msi/SmartMart_*.msi` | 企业部署用 |
-
-### 安装和使用
-
-1. 双击安装包，按向导完成安装
-2. 首次运行时允许防火墙访问（端口 8000）
-3. 启动 SmartMart，后端自动运行
-4. 如需小程序连接，运行 `add_firewall_rule.ps1` 开放防火墙
-
-### 注意事项
-
-- 安装包约 200-500MB（包含 AI 依赖）
-- 首次启动会自动创建数据库和必要目录
-- 数据保存在安装目录下，卸载前注意备份
-
-## 📖 详细文档
-
-- [后端文档](./backend/README.md) - API 接口、AI 配置说明
-- [桌面端文档](./desktop/README.md) - 客户端开发和构建
-- [小程序文档](./miniapp/README.md) - 微信小程序配置
-- [AI 识别指南](./backend/AI_README.md) - 商品识别功能详解
-- [部署指南](./DEPLOYMENT_GUIDE.md) - 生产环境部署
-
-## 🖥️ 系统要求
-
-### 后端服务
-- Python 3.11+
-- 4GB+ 内存（AI 识别需要加载模型）
-- 支持 Windows / macOS / Linux
-
-### 桌面客户端
-- Node.js 18+
-- Rust 工具链
-- Windows 10+ / macOS 10.15+ / Linux
-
-### 微信小程序
-- 微信开发者工具
-- 微信小程序 AppID
-
-## 📱 小程序使用说明
+## 小程序使用说明
 
 ### 首次配置
-1. 在微信开发者工具或手机中打开小程序
-2. 点击底部 **设置** 标签
-3. 输入服务器地址（支持以下格式）：
-   - 花生壳域名：`example.oicp.net:12345`
-   - 局域网 IP：`192.168.1.100:8000`
-   - 带协议的地址：`http://example.oicp.net:12345`
-4. 如果服务器设置了连接密码，还需要输入 **连接密码**
-5. 点击 **测试连接** 确认可达，然后 **保存**
-6. 回到 **收银** 标签即可开始使用
+1. 打开小程序，点击底部 **设置** 标签
+2. 输入服务器地址（支持格式：`example.vicp.fun`、`192.168.1.100:8000`、`http://...`）
+3. 输入 **连接密码**（与后端 `API_KEY` 一致）
+4. 点击 **测试连接** → **保存**
 
-### 收银功能
-- 扫描商品条码或输入名称搜索，自动添加到购物车
-- 调整商品数量，点击 **结账** 完成交易
-- 订单自动同步到后端服务器
+### 收银功能（首页）
+- 扫描商品条码或搜索名称，添加到购物车
+- 支持持续扫码模式
+- 搜索结果弹出选择框确认（即使只有一个结果）
+- 调整数量，点击 **结账** 完成交易
 
-### 桌面端同步（可选）
+### 与桌面端联动（可选）
 - 在设置页面点击 **扫码配对桌面端**
-- 扫描桌面端显示的二维码即可建立实时连接
-- 连接后，小程序扫码会同步到桌面端收银台
+- 扫描桌面端"设备配对"页面显示的二维码
+- 扫码后自动更新：服务器地址 + 连接密码 + 配对 Token
+- 配对后，撤销订单的商品会自动回到桌面端收银台
 
-## 🔐 API 连接密码
+### 采集功能
+- 采集中心：扫码录入、AI 拍照识别
+- 需要与桌面端 WebSocket 连接才能实时同步
+- 未连接桌面端时会提示
 
-后端支持设置连接密码，防止他人通过外网地址访问你的数据。
+## API 连接密码
+
+后端支持设置连接密码，防止他人通过外网访问数据。
 
 ### 设置密码
 
-在 `backend/app/config.py` 中修改 `API_KEY`：
+在 `backend/app/config.py` 中：
 
 ```python
-# 设置密码（改成你自己的）
-API_KEY = os.getenv("API_KEY", "你的密码")
-
-# 不需要密码（留空即可）
-API_KEY = os.getenv("API_KEY", "")
+API_KEY = os.getenv("API_KEY", "你的密码")  # 设置密码
+API_KEY = os.getenv("API_KEY", "")           # 不需要密码
 ```
 
-也可以通过环境变量覆盖，不用改代码：
+或通过环境变量：
 
 ```bash
 API_KEY=my_secret uvicorn app.main:app --host 0.0.0.0 --port 8000
@@ -377,39 +355,59 @@ API_KEY=my_secret uvicorn app.main:app --host 0.0.0.0 --port 8000
 | 场景 | 行为 |
 |------|------|
 | `API_KEY` 为空 | 所有请求正常通过，无需密码 |
-| `API_KEY` 已设置 | 请求必须携带 `X-API-Key` 请求头，密码错误返回 401 |
-| `/health` 接口 | 始终不需要密码，用于检测服务器是否可达 |
+| `API_KEY` 已设置 | 请求必须携带 `X-API-Key` 请求头 |
+| `/health` 接口 | 始终不需要密码（用于连接测试） |
+| WebSocket | 桌面端免密，小程序需 Token 配对 |
 
-### 小程序端
+## 设备配对流程
 
-在小程序 **设置** 页面输入服务器地址时一并输入连接密码，小程序会自动在每个请求中带上密码。
+```
+桌面端"设备配对"页面                      小程序"设置"页面
+         │                                       │
+         │  1. 调用后端 /generate_pairing_code    │
+         │     获取一次性 Token（5分钟有效）       │
+         │                                       │
+         │  2. 生成 QR 码：                      │
+         │     { server_url, api_key, token }     │
+         │     (本地后端用局域网IP，远程用配置地址)  │
+         │                                       │
+         │  ──── 小程序扫码 ────────────────────→ │
+         │                                       │
+         │                  3. 自动保存：          │
+         │                     - 服务器地址        │
+         │                     - 连接密码          │
+         │                     - 配对 Token        │
+         │                                       │
+         │                  4. 测试连接 → 连 WebSocket
+         │                     用 Token 注册       │
+         │                                       │
+         │  ←── WebSocket 实时联动 ──────────────→│
+```
 
-## 📸 功能截图
+## 详细文档
 
-### 收银台
-- 扫码添加商品
-- AI 视觉识别
-- 快捷结账
+- [后端文档](./backend/README.md) - API 接口、AI 配置、Docker 部署
+- [桌面端文档](./desktop/README.md) - 客户端开发、服务器配置
+- [小程序文档](./miniapp/README.md) - 微信小程序配置和使用
+- [AI 识别指南](./backend/AI_README.md) - 商品识别功能详解
 
-### 商品管理
-- 商品列表、搜索
-- 批量导入
-- 库存管理
+## 系统要求
 
-### AI 样本管理
-- 上传商品图片
-- 构建识别索引
-- 索引状态监控
+### 后端服务
+- Python 3.11+
+- 4GB+ 内存（AI 识别需要加载模型）
+- GPU 推荐（CUDA 12.x，AI 识别加速）
+- 支持 Windows / macOS / Linux
 
-### 订单查询
-- 订单列表、详情
-- 订单撤销、删除
-- 销售统计
+### 桌面客户端
+- Node.js 18+、Rust 工具链
+- Windows 10+ / macOS 10.15+ / Linux
 
-## 📄 许可证
+### 微信小程序
+- 微信开发者工具
+- 微信小程序 AppID
+- 若使用外网域名需在微信后台配置合法域名
+
+## 许可证
 
 MIT License
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！

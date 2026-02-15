@@ -65,7 +65,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/products/categories`,
           method: 'GET',
           success: resolve,
@@ -109,7 +109,7 @@ Page({
       }
       
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url,
           method: 'GET',
           success: resolve,
@@ -252,7 +252,7 @@ Page({
       
       try {
         const res = await new Promise((resolve, reject) => {
-          wx.request({
+          app.request({
             url: product.image_url,
             responseType: 'arraybuffer',
             success: resolve,

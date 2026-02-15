@@ -97,7 +97,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/reports/sales_daily?date=${this.data.selectedDate}`,
           method: 'GET',
           success: resolve,
@@ -121,7 +121,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/reports/top_products?days=${this.data.days}`,
           method: 'GET',
           success: resolve,
@@ -145,7 +145,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/reports/slow_movers?days=${this.data.days}&min_stock=0`,
           method: 'GET',
           success: resolve,
@@ -169,7 +169,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/reports/profit?days=${this.data.days}&include_no_cost=false`,
           method: 'GET',
           success: resolve,

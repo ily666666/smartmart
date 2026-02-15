@@ -88,7 +88,7 @@ Page({
       if (endDate) url += `&end_date=${endDate}`
       
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url,
           method: 'GET',
           success: resolve,

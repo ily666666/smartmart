@@ -75,7 +75,7 @@ Page({
       const { days, safetyStockDays } = this.data
       
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/analysis/restock_suggestion?days=${days}&safety_stock_days=${safetyStockDays}`,
           method: 'GET',
           success: resolve,
@@ -109,7 +109,7 @@ Page({
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/analysis/anomaly_detection?days=${this.data.days}&threshold_std=2.0`,
           method: 'GET',
           success: resolve,

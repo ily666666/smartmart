@@ -1,46 +1,6 @@
 // app.js
 import { getApiUrl } from './config'
 
-// 全局拦截 wx.request，自动添加连接密码（X-API-Key）并处理 401 响应
-const _originalRequest = wx.request
-wx.request = function(options) {
-  const app = getApp()
-  const header = options.header || {}
-  // 自动添加 API Key（如果已设置）
-  if (app && app.globalData && app.globalData.apiKey && !header['X-API-Key']) {
-    header['X-API-Key'] = app.globalData.apiKey
-  }
-  
-  // 包装 success 回调，统一处理 401 认证失败
-  const originalSuccess = options.success
-  const wrappedSuccess = function(res) {
-    if (res.statusCode === 401) {
-      // 连接密码错误，提示用户
-      wx.showModal({
-        title: '认证失败',
-        content: '连接密码错误，请在设置中检查密码是否正确',
-        confirmText: '去设置',
-        cancelText: '取消',
-        success: (modalRes) => {
-          if (modalRes.confirm) {
-            wx.switchTab({ url: '/pages/settings/settings' })
-          }
-        }
-      })
-    }
-    // 继续调用原始回调
-    if (originalSuccess) {
-      originalSuccess(res)
-    }
-  }
-  
-  return _originalRequest({
-    ...options,
-    header,
-    success: wrappedSuccess
-  })
-}
-
 App({
   onLaunch() {
     console.log('SmartMart 小程序启动')
@@ -91,15 +51,42 @@ App({
   },
 
   /**
-   * 获取带认证的请求头
-   * 所有 API 请求都应该使用此方法获取请求头
+   * 全局请求方法，自动注入 API Key 并处理 401
+   * 用法：app.request({...}) 替代 wx.request({...})
    */
-  getAuthHeaders() {
-    const headers = { 'Content-Type': 'application/json' }
-    if (this.globalData.apiKey) {
-      headers['X-API-Key'] = this.globalData.apiKey
+  request(options) {
+    const header = options.header || {}
+    // 自动添加 API Key
+    if (!header['X-API-Key'] && this.globalData.apiKey) {
+      header['X-API-Key'] = this.globalData.apiKey
     }
-    return headers
+
+    // 包装 success 回调，统一处理 401
+    const originalSuccess = options.success
+    const wrappedSuccess = (res) => {
+      if (res.statusCode === 401) {
+        wx.showModal({
+          title: '认证失败',
+          content: '连接密码错误，请在设置中检查密码是否正确',
+          confirmText: '去设置',
+          cancelText: '取消',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              wx.switchTab({ url: '/pages/settings/settings' })
+            }
+          }
+        })
+      }
+      if (originalSuccess) {
+        originalSuccess(res)
+      }
+    }
+
+    return wx.request({
+      ...options,
+      header,
+      success: wrappedSuccess
+    })
   },
 
   /**

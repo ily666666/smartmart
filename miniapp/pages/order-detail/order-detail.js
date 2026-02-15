@@ -24,7 +24,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/orders/${id}`,
           method: 'GET',
           success: resolve,
@@ -59,7 +59,7 @@ Page({
           try {
             const apiUrl = getApiUrl(app.globalData.serverUrl)
             const response = await new Promise((resolve, reject) => {
-              wx.request({
+              app.request({
                 url: `${apiUrl}/orders/${this.data.orderId}/revoke`,
                 method: 'POST',
                 success: resolve,
@@ -144,7 +144,7 @@ Page({
           try {
             const apiUrl = getApiUrl(app.globalData.serverUrl)
             const response = await new Promise((resolve, reject) => {
-              wx.request({
+              app.request({
                 url: `${apiUrl}/orders/${this.data.orderId}`,
                 method: 'DELETE',
                 success: resolve,

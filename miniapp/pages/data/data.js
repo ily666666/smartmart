@@ -55,7 +55,7 @@ Page({
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/reports/sales_daily?date=${today}`,
           method: 'GET',
           success: resolve,
@@ -87,7 +87,7 @@ Page({
       
       // 获取补货建议
       const restockRes = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/analysis/restock_suggestion?days=30&safety_stock_days=7`,
           method: 'GET',
           success: resolve,
@@ -116,7 +116,7 @@ Page({
       
       // 获取异常检测
       const anomalyRes = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/analysis/anomaly_detection?days=7&threshold_std=2.0`,
           method: 'GET',
           success: resolve,

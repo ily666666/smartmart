@@ -59,7 +59,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/products/${id}`,
           method: 'GET',
           success: resolve,
@@ -105,7 +105,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/products/categories`,
           method: 'GET',
           success: resolve,
@@ -318,7 +318,7 @@ Page({
           .join('&')
         
         const res = await new Promise((resolve, reject) => {
-          wx.request({
+          app.request({
             url: `${apiUrl}/products/`,
             method: 'POST',
             header: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -352,7 +352,7 @@ Page({
         }
         
         const res = await new Promise((resolve, reject) => {
-          wx.request({
+          app.request({
             url: `${apiUrl}/products/${productId}`,
             method: 'PUT',
             header: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -382,7 +382,7 @@ Page({
   async loadImageBase64(imageUrl) {
     try {
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: imageUrl,
           responseType: 'arraybuffer',
           success: resolve,
@@ -414,7 +414,7 @@ Page({
           try {
             const apiUrl = getApiUrl(app.globalData.serverUrl)
             const response = await new Promise((resolve, reject) => {
-              wx.request({
+              app.request({
                 url: `${apiUrl}/products/${this.data.productId}`,
                 method: 'DELETE',
                 success: resolve,

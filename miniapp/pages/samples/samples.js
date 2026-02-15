@@ -67,7 +67,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/api/samples/samples`,
           method: 'GET',
           success: resolve,
@@ -99,7 +99,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/api/samples/index_status`,
           method: 'GET',
           success: resolve,
@@ -120,7 +120,7 @@ Page({
     try {
       const apiUrl = getApiUrl(app.globalData.serverUrl)
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/api/samples/build_status`,
           method: 'GET',
           success: resolve,
@@ -247,7 +247,7 @@ Page({
           try {
             const apiUrl = getApiUrl(app.globalData.serverUrl)
             const response = await new Promise((resolve, reject) => {
-              wx.request({
+              app.request({
                 url: `${apiUrl}/api/samples/build_index`,
                 method: 'POST',
                 success: resolve,
@@ -301,7 +301,7 @@ Page({
     for (const img of sample.images) {
       try {
         const res = await new Promise((resolve, reject) => {
-          wx.request({
+          app.request({
             url: `${apiUrl}/api/samples/samples/${skuId}/images/${img}`,
             responseType: 'arraybuffer',
             success: resolve,
@@ -358,7 +358,7 @@ Page({
           try {
             const apiUrl = getApiUrl(app.globalData.serverUrl)
             const response = await new Promise((resolve, reject) => {
-              wx.request({
+              app.request({
                 url: `${apiUrl}/api/samples/samples/${sku}/${filename}`,
                 method: 'DELETE',
                 success: resolve,

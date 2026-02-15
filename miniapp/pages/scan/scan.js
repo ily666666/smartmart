@@ -200,7 +200,7 @@ Page({
       return
     }
     
-    wx.request({
+    app.request({
       url: `http://${serverUrl}/products/by_barcode`,
       method: 'GET',
       data: { code: code },

@@ -448,7 +448,7 @@ Page({
     
     if (!sampleId) return
     
-    wx.request({
+    app.request({
       url: `http://${serverUrl}/vision/confirm`,
       method: 'POST',
       header: { 'content-type': 'application/x-www-form-urlencoded' },

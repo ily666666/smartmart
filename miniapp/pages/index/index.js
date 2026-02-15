@@ -88,7 +88,7 @@ Page({
 
     const apiUrl = getApiUrl(app.globalData.serverUrl)
 
-    wx.request({
+    app.request({
       url: `${apiUrl}/products/search?q=${encodeURIComponent(query)}`,
       method: 'GET',
       timeout: 5000,
@@ -275,7 +275,7 @@ Page({
 
     try {
       const res = await new Promise((resolve, reject) => {
-        wx.request({
+        app.request({
           url: `${apiUrl}/orders/create`,
           method: 'POST',
           header: { 'Content-Type': 'application/json' },

@@ -16,7 +16,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgl1 \
     libglib2.0-0 \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
+
+# 时区设置
+ENV TZ=Asia/Shanghai
 
 # ==================== 安装 Miniconda ====================
 ENV CONDA_DIR=/opt/conda

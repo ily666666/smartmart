@@ -74,7 +74,19 @@ cd backend
 conda create -n smartmart python=3.11 -y
 conda activate smartmart
 
-# 安装依赖（自动从 PyTorch 源装 CUDA 12.1 版 torch）
+# 方式 A：通过 conda 一次装好 PyTorch + faiss（推荐）
+# GPU 服务器：
+conda install pytorch torchvision torchaudio pytorch-cuda=12.6 -c pytorch -c nvidia -y
+conda install -c pytorch faiss-gpu -y
+# 无 GPU 的机器：
+# conda install pytorch torchvision torchaudio cpuonly -c pytorch -y
+# conda install -c pytorch faiss-cpu -y
+
+# 方式 B：通过 pip 装 PyTorch，conda 装 faiss
+# pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+# conda install -c pytorch faiss-gpu -y
+
+# 安装其他依赖
 pip install -e .
 
 # 启动服务
@@ -109,6 +121,56 @@ python scripts/prepare_samples.py --db ./smartmart.db
 # 构建 AI 索引
 python scripts/build_index.py
 ```
+
+## 🐳 Docker 部署（GPU）
+
+适用于有 NVIDIA GPU 的 Linux 服务器，一键启动后端服务。
+
+### 前置条件
+
+- Docker 和 Docker Compose
+- NVIDIA 驱动已安装
+- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) 已安装
+
+### 快速启动
+
+```bash
+cd backend
+
+# 构建并启动（首次构建约 10-20 分钟）
+docker compose up -d
+
+# 查看日志
+docker compose logs -f
+
+# 停止服务
+docker compose down
+```
+
+### 自定义配置
+
+通过环境变量覆盖默认配置：
+
+```bash
+# 修改 API 密码
+API_KEY=my_secret docker compose up -d
+
+# 或者创建 .env 文件
+echo "API_KEY=my_secret" > .env
+docker compose up -d
+```
+
+### 数据持久化
+
+以下目录通过 volume 挂载到宿主机，容器重建不丢数据：
+
+| 挂载路径 | 说明 |
+|----------|------|
+| `./data` | FAISS 索引 + 样本图片 |
+| `./models` | CLIP 模型缓存（~350MB，首次启动自动下载） |
+| `./static` | 商品图片 |
+| `./uploads` | 上传文件 |
+| `./smartmart.db` | SQLite 数据库 |
 
 ## 📦 打包发布
 

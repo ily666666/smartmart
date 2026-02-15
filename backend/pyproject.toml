@@ -22,10 +22,10 @@ dependencies = [
     
     # ========== AI 识别模块 ==========
     "numpy>=1.26.0",
-    "faiss-cpu>=1.7.4",
+    # torch, torchvision, faiss 需单独安装，见 README
+    # conda install pytorch torchvision torchaudio pytorch-cuda=12.6 -c pytorch -c nvidia
+    # conda install -c pytorch faiss-gpu
     "transformers>=4.36.0",
-    "torch>=2.1.0",
-    "torchvision>=0.16.0",
     
     # ========== 工具 ==========
     "httpx>=0.25.0",
@@ -38,13 +38,6 @@ dev = [
     "pytest-asyncio>=0.21.0",
 ]
 
-# GPU 支持
-gpu = [
-    "faiss-gpu>=1.7.4",
-]
-
-[tool.pip]
-extra-index-url = ["https://download.pytorch.org/whl/cu121"]
 
 [build-system]
 requires = ["hatchling"]

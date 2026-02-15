@@ -1,0 +1,45 @@
+# ============================================================
+# SmartMart AI Backend - Docker Compose (GPU)
+# 使用方法：docker compose up -d
+# ============================================================
+
+services:
+  backend:
+    build: .
+    container_name: smartmart-backend
+    restart: unless-stopped
+
+    # GPU 支持
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+    # 端口映射
+    ports:
+      - "9999:8000"
+
+    # 环境变量
+    environment:
+      - API_KEY=${API_KEY:-smartmart2026}
+      - DEBUG=${DEBUG:-false}
+      - CLIP_MODEL_NAME=${CLIP_MODEL_NAME:-openai/clip-vit-base-patch32}
+
+    # 数据持久化
+    volumes:
+      - ./data:/app/data             # FAISS 索引 + 样本图片
+      - ./models:/app/models         # CLIP 模型缓存（~350MB）
+      - ./static:/app/static         # 商品图片
+      - ./uploads:/app/uploads       # 上传文件
+      - ./smartmart.db:/app/smartmart.db  # SQLite 数据库
+
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s

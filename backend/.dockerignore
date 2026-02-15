@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# 数据目录（通过 volume 挂载，不打入镜像）
+models/
+data/
+static/
+uploads/
+smartmart.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 文档
+*.md
+LICENSE
+
+# 测试
+test_*.py
+test_*.csv
+
+# 打包相关
+build_exe.py
+*.spec

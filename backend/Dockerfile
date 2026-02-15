@@ -41,18 +41,20 @@ RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkg
 ENV PATH=$CONDA_DIR/envs/smartmart/bin:$PATH
 ENV CONDA_DEFAULT_ENV=smartmart
 
-# ==================== 安装 PyTorch + faiss-gpu（通过 conda 一次搞定） ====================
-RUN conda install -n smartmart -c pytorch -c nvidia \
+# ==================== 通过 conda 安装 AI 相关依赖（避免版本冲突） ====================
+RUN conda install -n smartmart -c pytorch -c nvidia -c huggingface -c conda-forge \
     pytorch torchvision torchaudio pytorch-cuda=12.4 \
-    faiss-gpu -y && \
+    faiss-gpu \
+    transformers \
+    -y && \
     conda clean -afy
 
-# ==================== 安装项目依赖 ====================
+# ==================== 安装其他项目依赖（pip） ====================
 WORKDIR /app
 
-# 先复制依赖文件，利用 Docker 缓存
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e . 2>/dev/null || pip install --no-cache-dir \
+
+RUN pip install --no-cache-dir \
     "fastapi>=0.109.0" \
     "uvicorn[standard]>=0.27.0" \
     "pydantic>=2.5.0" \
@@ -62,7 +64,6 @@ RUN pip install --no-cache-dir -e . 2>/dev/null || pip install --no-cache-dir \
     "pillow>=10.2.0" \
     "websockets>=12.0" \
     "numpy>=1.26.0" \
-    "transformers>=4.36.0" \
     "httpx>=0.25.0" \
     "tqdm>=4.66.0"
 

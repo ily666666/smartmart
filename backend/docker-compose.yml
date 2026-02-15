@@ -27,8 +27,9 @@ services:
       - API_KEY=${API_KEY:-smartmart2026}
       - DEBUG=${DEBUG:-false}
       - CLIP_MODEL_NAME=${CLIP_MODEL_NAME:-openai/clip-vit-base-patch32}
+      - TZ=Asia/Shanghai
 
-    # 数据持久化
+    # 数据持久化（注意：首次启动前需先 touch smartmart.db）
     volumes:
       - ./data:/app/data             # FAISS 索引 + 样本图片
       - ./models:/app/models         # CLIP 模型缓存（~350MB）

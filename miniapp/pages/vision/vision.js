@@ -1,4 +1,6 @@
 // pages/vision/vision.js
+import { getApiUrl } from '../../config'
+
 const app = getApp()
 
 Page({
@@ -8,7 +10,8 @@ Page({
     uploading: false,        // 上传中
     candidates: [],          // 候选商品列表
     sampleId: null,          // 样本ID
-    wsConnected: false,      // 连接状态
+    wsConnected: false,      // WebSocket 连接状态
+    serverConfigured: false, // 服务器是否已配置
     cameraReady: false,      // 相机是否就绪
     flashMode: 'off',        // 闪光灯模式
     visionHistory: []        // 识别历史
@@ -75,7 +78,8 @@ Page({
   onShow() {
     // vision 页面不再是 Tab 页面，从采集中心进入
     this.setData({
-      wsConnected: app.globalData.wsConnected
+      wsConnected: app.globalData.wsConnected,
+      serverConfigured: !!app.globalData.serverUrl
     })
   },
 
@@ -266,8 +270,9 @@ Page({
     
     this.setData({ uploading: true })
     
+    const apiUrl = getApiUrl(serverUrl)
     app.uploadFile({
-      url: `http://${serverUrl}/vision/query`,
+      url: `${apiUrl}/vision/query`,
       filePath: imagePath,
       name: 'image',
       formData: {
@@ -336,24 +341,10 @@ Page({
       return
     }
     
-    if (!app.globalData.wsConnected) {
-      wx.showModal({
-        title: '未连接服务器',
-        content: '请先在设置页面配置服务器地址',
-        confirmText: '去设置',
-        success: (res) => {
-          if (res.confirm) {
-            wx.switchTab({ url: '/pages/settings/settings' })
-          }
-        }
-      })
-      return
-    }
-    
     // 震动反馈
     wx.vibrateShort({ type: 'medium' })
     
-    // 直接添加到购物车，不需要二次确认
+    // 尝试通过 WebSocket 发送到桌面端
     this.addToCart(product)
   },
 
@@ -367,11 +358,6 @@ Page({
     console.log('   socketTask:', socketTask ? '存在' : '不存在')
     console.log('   wsConnected:', app.globalData.wsConnected)
     
-    if (!socketTask) {
-      wx.showToast({ title: 'WebSocket 未连接', icon: 'none' })
-      return
-    }
-    
     // 确保 sku_id 是数字
     const skuId = parseInt(product.sku_id)
     if (isNaN(skuId)) {
@@ -380,41 +366,51 @@ Page({
       return
     }
     
-    const message = {
-      type: 'ADD_ITEM',
-      sku_id: skuId,
-      qty: 1,
-      source: 'vision_confirm',
-      device_id: deviceId,
-      ts: Date.now()
+    // 添加到历史记录
+    this.addToHistory(product)
+    
+    // 记录确认结果到服务器（HTTP，不依赖 WebSocket）
+    this.confirmResult(skuId)
+    
+    // 尝试通过 WebSocket 同步到桌面端
+    if (socketTask && app.globalData.wsConnected) {
+      const message = {
+        type: 'ADD_ITEM',
+        sku_id: skuId,
+        qty: 1,
+        source: 'vision_confirm',
+        device_id: deviceId,
+        ts: Date.now()
+      }
+      
+      console.log('📤 发送消息:', JSON.stringify(message))
+      
+      socketTask.send({
+        data: JSON.stringify(message),
+        success: () => {
+          console.log('✅ 添加商品事件已发送到桌面端')
+        },
+        fail: (error) => {
+          console.error('⚠️ 同步到桌面端失败:', error)
+        }
+      })
+      
+      wx.showToast({
+        title: '已添加到购物车',
+        icon: 'success',
+        duration: 800
+      })
+    } else {
+      // 桌面端未连接，识别结果已记录，提示用户
+      wx.showToast({
+        title: '已识别（桌面端未连接）',
+        icon: 'none',
+        duration: 2000
+      })
     }
     
-    console.log('📤 发送消息:', JSON.stringify(message))
-    
-    socketTask.send({
-      data: JSON.stringify(message),
-      success: () => {
-        console.log('✅ 添加商品事件已发送')
-        
-        // 添加到历史记录
-        this.addToHistory(product)
-        
-        this.confirmResult(skuId)
-        
-        wx.showToast({
-          title: '已添加到购物车',
-          icon: 'success',
-          duration: 800
-        })
-        
-        // 立即重置，让用户可以继续扫描
-        this.reset()
-      },
-      fail: (error) => {
-        console.error('❌ 发送失败:', error)
-        wx.showToast({ title: '发送失败', icon: 'none' })
-      }
-    })
+    // 立即重置，让用户可以继续扫描
+    this.reset()
   },
   
   // 添加到历史记录
@@ -448,8 +444,9 @@ Page({
     
     if (!sampleId) return
     
+    const apiUrl = getApiUrl(serverUrl)
     app.request({
-      url: `http://${serverUrl}/vision/confirm`,
+      url: `${apiUrl}/vision/confirm`,
       method: 'POST',
       header: { 'content-type': 'application/x-www-form-urlencoded' },
       data: { sample_id: sampleId, sku_id: skuId },

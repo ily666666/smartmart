@@ -44,6 +44,11 @@
   background: #ef4444;
 }
 
+.status-dot.partial {
+  background: #f59e0b;
+  box-shadow: 0 0 8rpx #f59e0b;
+}
+
 /* 主卡片 - 整合相机和操作区 */
 .main-card {
   background: white;

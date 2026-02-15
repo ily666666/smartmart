@@ -1,9 +1,10 @@
 <view class="page-container">
   <!-- 连接状态 -->
-  <view class="status-bar {{wsConnected ? 'connected' : 'disconnected'}}">
+  <view class="status-bar {{wsConnected ? 'connected' : (serverConfigured ? 'partial' : 'disconnected')}}">
     <view class="status-dot"></view>
-    <text>{{wsConnected ? '已连接服务器' : '未连接服务器'}}</text>
-    <text class="status-hint" wx:if="{{!wsConnected}}">请在设置中配置服务器</text>
+    <text>{{wsConnected ? '桌面端已连接' : (serverConfigured ? '服务器已配置，桌面端未连接' : '未配置服务器')}}</text>
+    <text class="status-hint" wx:if="{{!serverConfigured}}">请在设置中配置服务器</text>
+    <text class="status-hint" wx:elif="{{!wsConnected}}">扫码识别可用，同步购物车需连接桌面端</text>
   </view>
 
   <!-- 功能入口 -->

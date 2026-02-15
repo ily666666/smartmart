@@ -4,6 +4,7 @@ const app = getApp()
 Page({
   data: {
     wsConnected: false,
+    serverConfigured: false,
     features: [
       {
         id: 'scan',
@@ -44,7 +45,8 @@ Page({
     
     // 更新连接状态
     this.setData({
-      wsConnected: app.globalData.wsConnected
+      wsConnected: app.globalData.wsConnected,
+      serverConfigured: !!app.globalData.serverUrl
     })
   },
 
@@ -52,10 +54,10 @@ Page({
   navigateTo(e) {
     const { url, isTab } = e.currentTarget.dataset
     
-    // 检查连接状态
-    if (!app.globalData.wsConnected) {
+    // 检查服务器是否配置（不再强制要求 WebSocket 连接）
+    if (!app.globalData.serverUrl) {
       wx.showModal({
-        title: '未连接',
+        title: '未配置',
         content: '请先在设置页面配置服务器地址',
         confirmText: '去设置',
         success: (res) => {
@@ -67,14 +69,23 @@ Page({
       return
     }
     
+    // 如果桌面端未连接，提醒但不阻止
+    if (!app.globalData.wsConnected) {
+      wx.showToast({
+        title: '桌面端未连接，仅支持识别',
+        icon: 'none',
+        duration: 2000
+      })
+    }
+    
     wx.navigateTo({ url })
   },
 
   // 快速扫码（直接调用扫码）
   quickScan() {
-    if (!app.globalData.wsConnected) {
+    if (!app.globalData.serverUrl) {
       wx.showModal({
-        title: '未连接',
+        title: '未配置',
         content: '请先在设置页面配置服务器地址',
         confirmText: '去设置',
         success: (res) => {

@@ -46,6 +46,11 @@
   background: #ef4444;
 }
 
+.status-dot.partial {
+  background: #f59e0b;
+  box-shadow: 0 0 8rpx #f59e0b;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }

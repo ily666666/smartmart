@@ -3,8 +3,8 @@
   <!-- 状态栏 -->
   <view class="status-bar">
     <view class="status-item">
-      <view class="status-dot {{wsConnected ? 'connected' : 'disconnected'}}"></view>
-      <text>{{wsConnected ? '已连接' : '未连接'}}</text>
+      <view class="status-dot {{wsConnected ? 'connected' : (serverConfigured ? 'partial' : 'disconnected')}}"></view>
+      <text>{{wsConnected ? '桌面端已连接' : (serverConfigured ? '桌面端未连接' : '未配置')}}</text>
     </view>
     <text class="scan-count">已扫描: {{scanCount}}</text>
   </view>
@@ -14,7 +14,7 @@
     <!-- 相机区域 -->
     <view class="camera-container">
       <camera 
-        wx:if="{{cameraReady && wsConnected}}"
+        wx:if="{{cameraReady && serverConfigured}}"
         class="camera"
         mode="scanCode"
         resolution="medium"
@@ -35,15 +35,15 @@
         </cover-view>
       </camera>
       
-      <!-- 未连接提示 -->
-      <view class="camera-placeholder" wx:if="{{!wsConnected}}">
+      <!-- 未配置服务器提示 -->
+      <view class="camera-placeholder" wx:if="{{!serverConfigured}}">
         <text class="placeholder-icon">🔌</text>
         <text class="placeholder-text">请先配置服务器</text>
         <button class="btn-connect" bindtap="goSettings">去设置</button>
       </view>
       
       <!-- 相机加载中 -->
-      <view class="camera-placeholder" wx:if="{{wsConnected && !cameraReady}}">
+      <view class="camera-placeholder" wx:if="{{serverConfigured && !cameraReady}}">
         <text class="placeholder-icon">📷</text>
         <text class="placeholder-text">相机加载中...</text>
       </view>

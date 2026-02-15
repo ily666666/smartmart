@@ -1,9 +1,12 @@
 // pages/scan/scan.js
+import { getApiUrl } from '../../config'
+
 const app = getApp()
 
 Page({
   data: {
     wsConnected: false,
+    serverConfigured: false,  // 服务器是否已配置（不要求桌面端在线）
     cameraReady: false,
     flashMode: 'off',
     lastCode: '',
@@ -21,7 +24,8 @@ Page({
 
   onLoad() {
     this.setData({
-      wsConnected: app.globalData.wsConnected
+      wsConnected: app.globalData.wsConnected,
+      serverConfigured: !!app.globalData.serverUrl
     })
     
     // 检查隐私授权后再初始化相机
@@ -76,7 +80,8 @@ Page({
   onShow() {
     // scan 页面不再是 Tab 页面，从采集中心进入
     this.setData({
-      wsConnected: app.globalData.wsConnected
+      wsConnected: app.globalData.wsConnected,
+      serverConfigured: !!app.globalData.serverUrl
     })
   },
 
@@ -154,39 +159,37 @@ Page({
       sendSuccess: false
     })
     
-    // 创建历史记录条目（先加入，稍后更新商品信息）
+    // 创建历史记录条目
     const historyItem = {
       id: ++this._historyIdCounter,
       code: code,
       time: timeStr,
       name: null,
       price: null,
-      success: null  // 待定
+      success: null
     }
     
-    // 发送扫码事件
+    // 尝试发送到桌面端（可选，不影响主流程）
     const sent = this.sendScanEvent(code)
     
     if (sent) {
       this.setData({ sendSuccess: true })
-      
-      // 同时查询商品信息
-      this.fetchProductInfo(code, historyItem)
-      
       wx.showToast({
-        title: '已发送',
+        title: '已发送到桌面端',
         icon: 'success',
         duration: 800
       })
     } else {
-      historyItem.success = false
-      this.addToHistory(historyItem)
-      
+      console.log('⚠️ 桌面端未连接，跳过同步')
       wx.showToast({
-        title: '发送失败',
-        icon: 'none'
+        title: '已扫码（桌面端未连接）',
+        icon: 'none',
+        duration: 2000
       })
     }
+    
+    // 不管桌面端有没有连，都查询商品信息
+    this.fetchProductInfo(code, historyItem)
   },
 
   // 查询商品信息
@@ -200,8 +203,9 @@ Page({
       return
     }
     
+    const apiUrl = getApiUrl(serverUrl)
     app.request({
-      url: `http://${serverUrl}/products/by_barcode`,
+      url: `${apiUrl}/products/by_barcode`,
       method: 'GET',
       data: { code: code },
       success: (res) => {
@@ -280,7 +284,7 @@ Page({
   },
 
   manualScan() {
-    if (!app.globalData.wsConnected) {
+    if (!app.globalData.serverUrl) {
       wx.showToast({
         title: '请先配置服务器',
         icon: 'none'

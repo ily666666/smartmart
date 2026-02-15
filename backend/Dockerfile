@@ -41,15 +41,20 @@ RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkg
 ENV PATH=$CONDA_DIR/envs/smartmart/bin:$PATH
 ENV CONDA_DEFAULT_ENV=smartmart
 
-# ==================== 通过 conda 安装 AI 相关依赖（避免版本冲突） ====================
-# 配置 conda 网络：超时 600s，重试 5 次
+# ==================== conda 网络配置：超时 600s，重试 5 次 ====================
 RUN conda config --set remote_connect_timeout_secs 600 && \
     conda config --set remote_read_timeout_secs 600 && \
     conda config --set remote_max_retries 5
 
-RUN conda install -n smartmart -c pytorch -c nvidia -c huggingface -c conda-forge \
+# ==================== 第1层：PyTorch + FAISS（最大，约 2GB，很少改动） ====================
+RUN conda install -n smartmart -c pytorch -c nvidia -c conda-forge \
     pytorch torchvision torchaudio pytorch-cuda=12.4 \
     faiss-gpu \
+    -y && \
+    conda clean -afy
+
+# ==================== 第2层：transformers（较小，改版本不用重下 PyTorch） ====================
+RUN conda install -n smartmart -c huggingface -c conda-forge \
     "transformers>=4.36,<5" \
     -y && \
     conda clean -afy

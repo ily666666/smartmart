@@ -47,8 +47,9 @@ RUN conda config --set remote_connect_timeout_secs 600 && \
     conda config --set remote_max_retries 5
 
 # ==================== 第1层：PyTorch + FAISS（最大，约 2GB，很少改动） ====================
+# PyTorch >= 2.6 修复 CVE-2025-32434（torch.load 安全漏洞）
 RUN conda install -n smartmart -c pytorch -c nvidia -c conda-forge \
-    pytorch torchvision torchaudio pytorch-cuda=12.4 \
+    "pytorch>=2.6" torchvision torchaudio pytorch-cuda=12.4 \
     faiss-gpu \
     -y && \
     conda clean -afy

@@ -228,11 +228,6 @@ Page({
 
   // 扫码配对桌面端
   scanToPairDesktop() {
-    if (!this.data.serverUrl) {
-      wx.showToast({ title: '请先配置服务器地址', icon: 'none' })
-      return
-    }
-
     wx.scanCode({
       onlyFromCamera: false,
       scanType: ['qrCode'],
@@ -248,25 +243,58 @@ Page({
     })
   },
 
-  // 解析二维码并连接 WebSocket
+  // 解析二维码：提取 server_url + api_key + token，自动更新配置并连接
   parseAndConnectWS(content) {
-    let pairingToken = ''
-
     try {
       const data = JSON.parse(content)
-      if (data.type === 'smartmart_pairing' && data.token) {
-        pairingToken = data.token
+      if (data.type !== 'smartmart_pairing') {
+        wx.showToast({ title: '无效的配对码', icon: 'none' })
+        return
+      }
+
+      // 提取服务器地址（如果有）
+      const serverUrl = data.server_url || ''
+      const apiKey = data.api_key || ''
+      const pairingToken = data.token || ''
+
+      // 更新服务器配置
+      if (serverUrl) {
+        wx.setStorageSync('serverUrl', serverUrl)
+        app.globalData.serverUrl = serverUrl
+        this.setData({ serverUrl: serverUrl, inputServerUrl: serverUrl })
+      }
+
+      // 更新连接密码
+      if (apiKey) {
+        wx.setStorageSync('apiKey', apiKey)
+        app.globalData.apiKey = apiKey
+        this.setData({ apiKey: apiKey, inputApiKey: apiKey })
+      }
+
+      // 保存配对 Token
+      if (pairingToken) {
+        wx.setStorageSync('pairingToken', pairingToken)
+        app.globalData.pairingToken = pairingToken
+      }
+
+      console.log('扫码配对 - 地址:', serverUrl, '密码:', apiKey ? '已设置' : '无', 'Token:', pairingToken ? '已获取' : '无')
+
+      // 先测试连接，成功后自动连 WebSocket
+      if (serverUrl) {
+        wx.showToast({ title: '配置已更新，正在连接...', icon: 'none', duration: 2000 })
+        this.testConnection().then(() => {
+          if (this.data.serverConnected && pairingToken) {
+            this.connectWebSocket()
+          }
+        })
+      } else if (this.data.serverUrl && pairingToken) {
+        // 没有新地址但有 token，直接连 WebSocket
+        this.connectWebSocket()
       }
     } catch (e) {
-      // 非 JSON 格式，忽略
+      console.error('解析配对码失败:', e)
+      wx.showToast({ title: '二维码格式无效', icon: 'none' })
     }
-
-    if (pairingToken) {
-      wx.setStorageSync('pairingToken', pairingToken)
-      app.globalData.pairingToken = pairingToken
-    }
-
-    this.connectWebSocket()
   },
 
   // 连接 WebSocket（桌面端同步）

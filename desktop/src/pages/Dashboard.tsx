@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
+import { apiFetch } from '../config';
 import './Dashboard.css';
 
 interface Stats {
@@ -29,7 +29,7 @@ const Dashboard = () => {
       const today = new Date().toISOString().split('T')[0];
       
       // 获取今日销售数据
-      const response = await fetch(`${API_BASE_URL}/reports/sales_daily?date=${today}`);
+      const response = await apiFetch(`/reports/sales_daily?date=${today}`);
       if (response.ok) {
         const data = await response.json();
         setStats({

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { API_BASE_URL } from '../config';
+import { apiFetch, getApiBaseUrl } from '../config';
 import './Samples.css';
 
 interface SampleStatus {
@@ -101,7 +101,7 @@ const Samples = () => {
   // 加载样本状态
   const loadSamples = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/samples/samples`);
+      const res = await apiFetch('/api/samples/samples');
       if (res.ok) {
         const data = await res.json();
         setSamples(data);
@@ -114,7 +114,7 @@ const Samples = () => {
   // 加载索引状态
   const loadIndexStatus = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/samples/index_status`);
+      const res = await apiFetch('/api/samples/index_status');
       if (res.ok) {
         const data = await res.json();
         setIndexStatus(data);
@@ -127,7 +127,7 @@ const Samples = () => {
   // 加载构建进度
   const loadBuildProgress = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/samples/build_status`);
+      const res = await apiFetch('/api/samples/build_status');
       if (res.ok) {
         const data = await res.json();
         setBuildProgress(data);
@@ -165,7 +165,7 @@ const Samples = () => {
   // 创建所有目录
   const handleCreateDirectories = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/samples/create_directories`, {
+      const res = await apiFetch('/api/samples/create_directories', {
         method: 'POST'
       });
       if (res.ok) {
@@ -197,7 +197,7 @@ const Samples = () => {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/samples/build_index`, {
+      const res = await apiFetch('/api/samples/build_index', {
         method: 'POST'
       });
       if (res.ok) {
@@ -233,7 +233,7 @@ const Samples = () => {
         formData.append('files', file);
       });
 
-      const res = await fetch(`${API_BASE_URL}/api/samples/samples/${selectedSku}/upload_multiple`, {
+      const res = await apiFetch(`/api/samples/samples/${selectedSku}/upload_multiple`, {
         method: 'POST',
         body: formData
       });
@@ -263,7 +263,7 @@ const Samples = () => {
     if (!confirm(`确定要删除图片 ${filename} 吗？`)) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/samples/samples/${skuId}/${filename}`, {
+      const res = await apiFetch(`/api/samples/samples/${skuId}/${filename}`, {
         method: 'DELETE'
       });
       if (res.ok) {
@@ -298,7 +298,7 @@ const Samples = () => {
         formData.append('files', file);
       });
 
-      const res = await fetch(`${API_BASE_URL}/api/samples/samples/${editingSample.sku_id}/upload_multiple`, {
+      const res = await apiFetch(`/api/samples/samples/${editingSample.sku_id}/upload_multiple`, {
         method: 'POST',
         body: formData
       });
@@ -306,7 +306,7 @@ const Samples = () => {
       if (res.ok) {
         await loadSamples();
         // 重新获取该商品的详情
-        const detailRes = await fetch(`${API_BASE_URL}/api/samples/samples/${editingSample.sku_id}`);
+        const detailRes = await apiFetch(`/api/samples/samples/${editingSample.sku_id}`);
         if (detailRes.ok) {
           const updated = await detailRes.json();
           setEditingSample(updated);
@@ -326,7 +326,7 @@ const Samples = () => {
   const openEditModal = async (sample: SampleStatus) => {
     // 获取最新详情
     try {
-      const res = await fetch(`${API_BASE_URL}/api/samples/samples/${sample.sku_id}`);
+      const res = await apiFetch(`/api/samples/samples/${sample.sku_id}`);
       if (res.ok) {
         const data = await res.json();
         setEditingSample(data);
@@ -530,7 +530,7 @@ const Samples = () => {
                   sample.images.slice(0, 4).map(img => (
                     <div key={img} className="image-thumb">
                       <img 
-                        src={`${API_BASE_URL}/api/samples/samples/${sample.sku_id}/images/${img}`} 
+                        src={`${getApiBaseUrl()}/api/samples/samples/${sample.sku_id}/images/${img}`} 
                         alt={img}
                         loading="lazy"
                       />
@@ -720,7 +720,7 @@ const Samples = () => {
                   editingSample.images.map((img, idx) => (
                     <div key={img} className="modal-image-item">
                       <img 
-                        src={`${API_BASE_URL}/api/samples/samples/${editingSample.sku_id}/images/${img}`} 
+                        src={`${getApiBaseUrl()}/api/samples/samples/${editingSample.sku_id}/images/${img}`} 
                         alt={img}
                       />
                       <div className="image-overlay">

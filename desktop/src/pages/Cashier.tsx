@@ -1,6 +1,6 @@
 // 将原来的 App.tsx 内容移到这里，作为收银页面
 import { useState, useEffect, useRef, useCallback } from "react";
-import { API_BASE_URL, WS_URL, DEVICE_ID } from "../config";
+import { apiFetch, getApiBaseUrl, getWsUrl, DEVICE_ID } from "../config";
 import "./Cashier.css";
 
 interface Product {
@@ -157,7 +157,7 @@ const Cashier = () => {
       return;
     }
 
-    const websocket = new WebSocket(WS_URL);
+    const websocket = new WebSocket(getWsUrl());
     
     websocket.onopen = () => {
       console.log("✅ WebSocket 已连接");
@@ -323,8 +323,8 @@ const Cashier = () => {
 
   const handleScan = async (query: string) => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}`
+      const response = await apiFetch(
+        `/products/search?q=${encodeURIComponent(query)}`
       );
       
       if (response.ok) {
@@ -343,32 +343,17 @@ const Cashier = () => {
           addToCart(product);
           showNotification(`已添加: ${product.name}`, "success");
         } else if (data.type === 'fuzzy' && data.products.length > 0) {
-          // 模糊匹配（名称），显示选择列表
-          if (data.products.length === 1) {
-            // 只有一个结果，直接添加
-            const productData = data.products[0];
-            const product: Product = {
-              sku_id: productData.sku_id,
-              barcode: productData.barcode,
-              name: productData.name,
-              price: productData.price,
-              stock: productData.stock
-            };
-            addToCart(product);
-            showNotification(`已添加: ${product.name}`, "success");
-          } else {
-            // 多个结果，显示选择弹窗
-            const products: Product[] = data.products.map((p: any) => ({
-              sku_id: p.sku_id,
-              barcode: p.barcode,
-              name: p.name,
-              price: p.price,
-              stock: p.stock
-            }));
-            setSearchResults(products);
-            setSearchQuery(query);
-            setShowSearchModal(true);
-          }
+          // 模糊匹配（名称），无论几个结果都弹选择框让用户确认
+          const products: Product[] = data.products.map((p: any) => ({
+            sku_id: p.sku_id,
+            barcode: p.barcode,
+            name: p.name,
+            price: p.price,
+            stock: p.stock
+          }));
+          setSearchResults(products);
+          setSearchQuery(query);
+          setShowSearchModal(true);
         }
       } else {
         showNotification(`未找到商品: ${query}`, "error");
@@ -450,7 +435,7 @@ const Cashier = () => {
     const totalAmount = getTotalAmount();
 
     try {
-      const response = await fetch(`${API_BASE_URL}/orders/create`, {
+      const response = await apiFetch('/orders/create', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

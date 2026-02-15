@@ -1,34 +1,34 @@
-"""配对 API"""
+"""配对 API
 
-from fastapi import APIRouter, HTTPException, Request, Depends
+配对流程：
+1. 桌面端调用 /generate_pairing_code 获取一次性 Token
+2. 桌面端将 { server_url, api_key, token } 编码为 QR 码
+3. 小程序扫码 → 自动保存服务器地址和密码 → 用 Token 注册 WebSocket
+4. Token 验证通过后，小程序与桌面端实时联动
+
+说明：
+- server_url 和 api_key 由桌面端自己的配置决定，不在后端生成
+- 后端只负责生成和验证 Token
+"""
+
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-import socket
 from typing import List, Optional
 from datetime import datetime
+import socket
 
-from ..security import get_token_manager, is_local_network_ip
+from ..security import get_token_manager
 from ..database import get_db
 from ..models.device import Device
 
 router = APIRouter()
 
 
-class PairingInfo(BaseModel):
-    """配对信息"""
-    http_url: str
-    ws_url: str
-    token: str
-    expires_in: int
-    local_ip: str
-    all_ips: list[str] = []  # 所有可用的局域网 IP
-
-
 def get_all_local_ips() -> list[str]:
     """获取本机所有局域网 IP"""
     ips = []
     try:
-        # 获取主机名对应的所有 IP
         hostname = socket.gethostname()
         for info in socket.getaddrinfo(hostname, None, socket.AF_INET):
             ip = info[4][0]
@@ -37,7 +37,6 @@ def get_all_local_ips() -> list[str]:
     except Exception:
         pass
     
-    # 备用方法：通过 UDP socket 获取
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
@@ -52,132 +51,40 @@ def get_all_local_ips() -> list[str]:
 
 
 def get_local_ip() -> str:
-    """获取本机最可能的局域网 IP（优先 192.168.x.x 和 10.x.x.x）"""
+    """获取本机最可能的局域网 IP（优先 192.168.x.x）"""
     ips = get_all_local_ips()
-    
     if not ips:
         return "127.0.0.1"
-    
-    # 优先级：192.168.x.x > 10.x.x.x > 172.16-31.x.x > 其他
     for ip in ips:
         if ip.startswith("192.168."):
             return ip
-    
     for ip in ips:
         if ip.startswith("10."):
             return ip
-    
-    for ip in ips:
-        parts = ip.split(".")
-        if len(parts) == 4 and parts[0] == "172":
-            second = int(parts[1])
-            if 16 <= second <= 31:
-                return ip
-    
     return ips[0]
 
 
-@router.post("/generate_pairing_code", response_model=PairingInfo)
+@router.post("/generate_pairing_code")
 async def generate_pairing_code(
-    request: Request,
     validity_seconds: int = 300
 ):
     """
-    生成配对二维码信息
-    
-    **功能**:
-    - 生成一次性配对 Token
-    - 返回 HTTP/WebSocket 地址
-    - 用于小程序扫码配对
-    
-    **参数**:
-    - validity_seconds: Token 有效期（秒），默认 300 秒（5分钟）
+    生成配对 Token + 本机局域网 IP
     
     **返回**:
-    - http_url: HTTP API 地址
-    - ws_url: WebSocket 地址
-    - token: 配对 Token
+    - token: 配对 Token（一次性，5分钟有效）
     - expires_in: 过期时间（秒）
-    - local_ip: 本机局域网 IP
+    - local_ip: 推荐的局域网 IP
+    - all_ips: 所有可用的局域网 IP（供桌面端选择）
     """
-    # 获取本机 IP
-    local_ip = get_local_ip()
-    all_ips = get_all_local_ips()
-    
-    # 从配置获取端口（默认 8000）
-    port = 8000  # 可以从环境变量或配置文件读取
-    
-    # 生成 Token
     token_manager = get_token_manager()
     token = token_manager.generate_pairing_token(validity_seconds)
     
-    # 构建 URL
-    http_url = f"http://{local_ip}:{port}"
-    ws_url = f"ws://{local_ip}:{port}/ws"
-    
-    return PairingInfo(
-        http_url=http_url,
-        ws_url=ws_url,
-        token=token,
-        expires_in=validity_seconds,
-        local_ip=local_ip,
-        all_ips=all_ips
-    )
-
-
-@router.get("/validate_token")
-async def validate_token(
-    token: str,
-    request: Request
-):
-    """
-    验证 Token（用于客户端验证）
-    
-    **功能**:
-    - 验证 Token 是否有效
-    - 检查客户端 IP 是否为局域网
-    
-    **注意**: 不会标记 Token 为已使用
-    """
-    # 检查客户端 IP
-    client_ip = request.client.host
-    
-    if not is_local_network_ip(client_ip):
-        raise HTTPException(
-            status_code=403,
-            detail="仅允许局域网访问"
-        )
-    
-    # 验证 Token（不标记为已使用）
-    token_manager = get_token_manager()
-    is_valid = token_manager.validate_token(token, mark_as_used=False)
-    
-    if not is_valid:
-        raise HTTPException(
-            status_code=401,
-            detail="Token 无效或已过期"
-        )
-    
     return {
-        "valid": True,
-        "message": "Token 有效"
-    }
-
-
-@router.get("/pairing_status")
-async def get_pairing_status():
-    """
-    获取配对状态
-    
-    **功能**:
-    - 显示活跃 Token 数量
-    - 显示本机 IP
-    """
-    token_manager = get_token_manager()
-    
-    return {
+        "token": token,
+        "expires_in": validity_seconds,
         "local_ip": get_local_ip(),
-        "active_tokens": token_manager.get_active_tokens_count()
+        "all_ips": get_all_local_ips(),
     }
 
 

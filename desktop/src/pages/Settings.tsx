@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
-import { API_BASE_URL } from '../config';
+import { apiFetch, getServerHost, getServerPort, getApiKey, setServerConfig, isLocalServer, getApiBaseUrl } from '../config';
 import './Settings.css';
 
 // 页面配置 - 收银台和系统设置为必显示
@@ -82,6 +82,13 @@ const Settings = () => {
   const [autostartEnabled, setAutostartEnabled] = useState(false);
   const [autostartLoading, setAutostartLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // 服务器配置
+  const [serverHost, setServerHost] = useState(getServerHost());
+  const [serverPort, setServerPort] = useState(getServerPort());
+  const [serverApiKey, setServerApiKey] = useState(getApiKey());
+  const [serverTesting, setServerTesting] = useState(false);
+  const [serverStatus, setServerStatus] = useState<'unknown' | 'ok' | 'fail'>('unknown');
   
   // 消息提示
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -90,13 +97,14 @@ const Settings = () => {
   useEffect(() => {
     loadSettings();
     checkAutostartStatus();
+    testServerConnection(true); // 静默测试
   }, []);
 
   // 从后端 API 加载设置
   const loadSettings = async () => {
     try {
       setSettingsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/settings`);
+      const response = await apiFetch('/settings');
       if (response.ok) {
         const data = await response.json();
         setSettings(data);
@@ -113,7 +121,7 @@ const Settings = () => {
   // 保存设置到后端
   const saveSettings = async (newSettings: Partial<SettingsData>) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/settings`, {
+      const response = await apiFetch('/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSettings),
@@ -168,13 +176,67 @@ const Settings = () => {
     setTimeout(() => setMessage(null), 3000);
   };
 
+  // ========== 服务器配置 ==========
+
+  // 测试服务器连接
+  const testServerConnection = async (silent = false) => {
+    setServerTesting(true);
+    try {
+      const protocol = serverHost.startsWith('https://') ? 'https' : 'http';
+      const host = serverHost.replace(/^https?:\/\//, '');
+      const url = `${protocol}://${host}:${serverPort}/health`;
+      
+      const res = await fetch(url, { 
+        method: 'GET',
+        signal: AbortSignal.timeout(5000),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'ok') {
+          setServerStatus('ok');
+          if (!silent) showMessage('success', '服务器连接成功');
+        } else {
+          setServerStatus('fail');
+          if (!silent) showMessage('error', '服务器响应异常');
+        }
+      } else {
+        setServerStatus('fail');
+        if (!silent) showMessage('error', `连接失败 (${res.status})`);
+      }
+    } catch (e) {
+      setServerStatus('fail');
+      if (!silent) showMessage('error', '无法连接服务器');
+    } finally {
+      setServerTesting(false);
+    }
+  };
+
+  // 保存服务器配置
+  const saveServerConfig = () => {
+    setServerConfig(serverHost.trim(), serverPort.trim(), serverApiKey);
+    showMessage('success', '服务器配置已保存');
+    testServerConnection(true);
+  };
+
+  // 重置服务器为本地
+  const resetToLocal = () => {
+    setServerHost('localhost');
+    setServerPort('8000');
+    setServerApiKey('');
+    setServerConfig('localhost', '8000', '');
+    showMessage('success', '已恢复为本地服务器');
+    setServerStatus('unknown');
+    testServerConnection(true);
+  };
+
   // 登录处理 - 使用后端 API 验证
   const handleLogin = async () => {
     setLoginLoading(true);
     setLoginError('');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/settings/verify-password`, {
+      const response = await apiFetch('/settings/verify-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: loginPassword }),
@@ -211,7 +273,7 @@ const Settings = () => {
   const handleResetToDefault = async () => {
     setResetLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/settings/reset-to-default`, {
+      const response = await apiFetch('/settings/reset-to-default', {
         method: 'POST',
       });
       
@@ -249,7 +311,7 @@ const Settings = () => {
     
     setResetLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/settings/reset-password`, {
+      const response = await apiFetch('/settings/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -515,6 +577,69 @@ const Settings = () => {
           {message.type === 'success' ? '✅' : '❌'} {message.text}
         </div>
       )}
+
+      {/* 服务器配置 */}
+      <div className="settings-section full-width">
+        <h2 className="section-title">🌐 服务器配置</h2>
+        <p className="section-desc">
+          默认连接本地服务，也可以配置远程服务器地址
+          {!isLocalServer() && <span className="remote-badge">远程</span>}
+        </p>
+        <div className="settings-card">
+          <div className="server-config-grid">
+            <div className="server-input-group">
+              <label>服务器地址</label>
+              <input
+                type="text"
+                value={serverHost}
+                onChange={(e) => { setServerHost(e.target.value); setServerStatus('unknown'); }}
+                placeholder="localhost"
+              />
+            </div>
+            <div className="server-input-group port">
+              <label>端口</label>
+              <input
+                type="text"
+                value={serverPort}
+                onChange={(e) => { setServerPort(e.target.value); setServerStatus('unknown'); }}
+                placeholder="8000"
+              />
+            </div>
+            <div className="server-input-group">
+              <label>连接密码 <span className="optional-hint">（本地无需填写）</span></label>
+              <input
+                type="password"
+                value={serverApiKey}
+                onChange={(e) => setServerApiKey(e.target.value)}
+                placeholder="远程服务器需要填写"
+              />
+            </div>
+          </div>
+          <div className="server-actions">
+            <div className="server-status-display">
+              <span className={`server-dot ${serverStatus}`}></span>
+              <span className="server-status-text">
+                {serverTesting ? '测试中...' : 
+                 serverStatus === 'ok' ? `已连接 ${getApiBaseUrl()}` : 
+                 serverStatus === 'fail' ? '连接失败' : '未测试'}
+              </span>
+            </div>
+            <div className="server-buttons">
+              <button className="btn-secondary" onClick={() => testServerConnection(false)} disabled={serverTesting}>
+                {serverTesting ? '测试中...' : '测试连接'}
+              </button>
+              <button className="btn-primary" onClick={saveServerConfig}>
+                保存配置
+              </button>
+              {!isLocalServer() && (
+                <button className="btn-link" onClick={resetToLocal}>
+                  恢复本地
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* 三栏布局 */}
       <div className="settings-grid-3">

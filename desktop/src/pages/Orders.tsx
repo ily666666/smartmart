@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
+import { apiFetch } from '../config';
 import './Orders.css';
 
 interface OrderItem {
@@ -112,16 +112,16 @@ const Orders = () => {
   const loadOrders = async (page: number = currentPage) => {
     setLoading(true);
     try {
-      let url = `${API_BASE_URL}/orders/list?page=${page}&page_size=${pageSize}`;
+      let path = `/orders/list?page=${page}&page_size=${pageSize}`;
       
       if (startDate) {
-        url += `&start_date=${startDate}`;
+        path += `&start_date=${startDate}`;
       }
       if (endDate) {
-        url += `&end_date=${endDate}`;
+        path += `&end_date=${endDate}`;
       }
       
-      const response = await fetch(url);
+      const response = await apiFetch(path);
       
       if (response.ok) {
         const data = await response.json();
@@ -158,7 +158,7 @@ const Orders = () => {
   const fetchOrderDetail = async (orderId: number) => {
     setDetailLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/orders/${orderId}`);
+      const response = await apiFetch(`/orders/${orderId}`);
       if (response.ok) {
         const data = await response.json();
         setSelectedOrder(data);
@@ -194,7 +194,7 @@ const Orders = () => {
   const executeDeleteOrder = async (orderId: number) => {
     setActionLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+      const response = await apiFetch(`/orders/${orderId}`, {
         method: 'DELETE',
       });
       
@@ -218,7 +218,7 @@ const Orders = () => {
   const executeRevokeOrder = async (orderId: number) => {
     setActionLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/orders/${orderId}/revoke`, {
+      const response = await apiFetch(`/orders/${orderId}/revoke`, {
         method: 'POST',
       });
       
@@ -322,7 +322,7 @@ const Orders = () => {
     
     for (const orderId of selectedIds) {
       try {
-        const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+        const response = await apiFetch(`/orders/${orderId}`, {
           method: 'DELETE',
         });
         if (response.ok) {

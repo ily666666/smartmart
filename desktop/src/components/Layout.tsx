@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
+import { apiFetch } from '../config';
 import './Layout.css';
 
 interface LayoutProps {
@@ -38,7 +38,7 @@ const Layout = ({ children }: LayoutProps) => {
   useEffect(() => {
     const loadVisibility = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/settings`);
+        const response = await apiFetch('/settings');
         if (response.ok) {
           const settings = await response.json();
           if (settings?.page_visibility) {

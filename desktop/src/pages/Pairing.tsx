@@ -1,16 +1,7 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config';
+import { apiFetch, getApiBaseUrl, getApiKey, getServerPort, isLocalServer } from '../config';
 import QRCode from 'qrcode';
 import './Pairing.css';
-
-interface PairingInfo {
-  http_url: string;
-  ws_url: string;
-  token: string;
-  expires_in: number;
-  local_ip: string;
-  all_ips: string[];
-}
 
 interface DeviceInfo {
   id: number;
@@ -23,22 +14,42 @@ interface DeviceInfo {
 }
 
 export default function Pairing() {
-  const [pairingInfo, setPairingInfo] = useState<PairingInfo | null>(null);
-  const [selectedIp, setSelectedIp] = useState<string>('');
+  const [token, setToken] = useState<string>('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [countdown, setCountdown] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   
+  // 本地模式下的 IP 选择
+  const [allIps, setAllIps] = useState<string[]>([]);
+  const [selectedIp, setSelectedIp] = useState<string>('');
+  const [recommendedIp, setRecommendedIp] = useState<string>('');
+  
   // 设备列表相关状态
   const [devices, setDevices] = useState<DeviceInfo[]>([]);
   const [devicesLoading, setDevicesLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  /** 判断是否本地后端（需要 IP 选择器） */
+  const isLocal = isLocalServer();
+
+  /** 
+   * 获取 QR 码中的 server_url
+   * - 远程服务器：直接用桌面端配置的地址
+   * - 本地后端：用选中的局域网 IP + 端口
+   */
+  function getQrServerUrl(): string {
+    if (isLocal && selectedIp) {
+      const port = getServerPort();
+      return `http://${selectedIp}:${port}`;
+    }
+    return getApiBaseUrl();
+  }
+
   function copyToken() {
-    if (pairingInfo) {
-      navigator.clipboard.writeText(pairingInfo.token);
+    if (token) {
+      navigator.clipboard.writeText(token);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -48,7 +59,7 @@ export default function Pairing() {
   async function fetchDevices() {
     setDevicesLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/pairing/devices`);
+      const response = await apiFetch('/pairing/devices');
       if (response.ok) {
         const data = await response.json();
         setDevices(data);
@@ -63,7 +74,7 @@ export default function Pairing() {
   // 删除设备
   async function deleteDevice(deviceId: string) {
     try {
-      const response = await fetch(`${API_BASE_URL}/pairing/devices/${deviceId}`, {
+      const response = await apiFetch(`/pairing/devices/${deviceId}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -111,72 +122,90 @@ export default function Pairing() {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (countdown === 0 && pairingInfo) {
-      // Token 过期，重新生成
+    } else if (countdown === 0 && token) {
       generatePairingCode();
     }
   }, [countdown]);
 
-  // 当选中的 IP 变化时，重新生成二维码
+  // 本地模式下切换 IP 时，重新生成 QR 码
   useEffect(() => {
-    if (pairingInfo && selectedIp) {
-      updateQrCode(selectedIp, pairingInfo.token);
+    if (isLocal && selectedIp && token) {
+      updateQrCode();
     }
   }, [selectedIp]);
 
-  async function updateQrCode(ip: string, token: string) {
-    const port = 8000;
+  /** 生成 QR 码图片 */
+  async function updateQrCode() {
     const qrData = JSON.stringify({
-      http_url: `http://${ip}:${port}`,
-      ws_url: `ws://${ip}:${port}/ws`,
+      type: 'smartmart_pairing',
+      server_url: getQrServerUrl(),
+      api_key: getApiKey(),
       token: token,
-      type: 'smartmart_pairing'
     });
 
     const qrDataUrl = await QRCode.toDataURL(qrData, {
       width: 300,
       margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
+      color: { dark: '#000000', light: '#FFFFFF' }
     });
 
     setQrCodeUrl(qrDataUrl);
   }
 
+  /**
+   * 生成配对码
+   * 
+   * 后端返回 token + 局域网 IP 列表
+   * 桌面端根据自身配置决定 QR 码中的 server_url：
+   * - 本地后端 → 用后端返回的局域网 IP
+   * - 远程服务器 → 用桌面端配置的远程地址
+   */
   async function generatePairingCode() {
     setLoading(true);
     setError('');
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/pairing/generate_pairing_code?validity_seconds=300`,
+      const response = await apiFetch(
+        '/pairing/generate_pairing_code?validity_seconds=300',
         { method: 'POST' }
       );
 
       if (response.ok) {
-        const data: PairingInfo = await response.json();
-        setPairingInfo(data);
-        setSelectedIp(data.local_ip);
-        setCountdown(data.expires_in);
+        const data = await response.json();
+        const newToken = data.token;
+        const expiresIn = data.expires_in || 300;
+        
+        setToken(newToken);
+        setCountdown(expiresIn);
 
-        // 生成二维码数据
+        // 本地模式：保存 IP 列表供选择
+        if (isLocal) {
+          const ips: string[] = data.all_ips || [];
+          const recommended: string = data.local_ip || (ips.length > 0 ? ips[0] : '127.0.0.1');
+          setAllIps(ips);
+          setRecommendedIp(recommended);
+          // 如果还没选过 IP，默认用推荐的
+          if (!selectedIp || !ips.includes(selectedIp)) {
+            setSelectedIp(recommended);
+          }
+        }
+
+        // 生成 QR 码
+        const serverUrl = isLocal
+          ? `http://${data.local_ip || '127.0.0.1'}:${getServerPort()}`
+          : getApiBaseUrl();
+
         const qrData = JSON.stringify({
-          http_url: data.http_url,
-          ws_url: data.ws_url,
-          token: data.token,
-          type: 'smartmart_pairing'
+          type: 'smartmart_pairing',
+          server_url: serverUrl,
+          api_key: getApiKey(),
+          token: newToken,
         });
 
-        // 生成二维码图片
         const qrDataUrl = await QRCode.toDataURL(qrData, {
           width: 300,
           margin: 2,
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          }
+          color: { dark: '#000000', light: '#FFFFFF' }
         });
 
         setQrCodeUrl(qrDataUrl);
@@ -200,7 +229,7 @@ export default function Pairing() {
     <div className="pairing-page">
       <header className="page-header">
         <h1>📱 设备配对</h1>
-        <p className="subtitle">小程序扫码快速配对</p>
+        <p className="subtitle">小程序扫码快速配对（自动配置服务器地址 + 密码 + 联动授权）</p>
       </header>
 
       <div className="content">
@@ -218,7 +247,7 @@ export default function Pairing() {
           </div>
         )}
 
-        {!loading && !error && pairingInfo && (
+        {!loading && !error && token && (
           <div className="pairing-container">
             <div className="qr-section">
               <div className="qr-code-wrapper">
@@ -244,14 +273,14 @@ export default function Pairing() {
             <div className="info-section">
               <h3>配对信息</h3>
 
-              <div className="info-item">
-                <div className="info-label">选择本机 IP（点击切换）</div>
-                <div className="ip-selector">
-                  {pairingInfo.all_ips && pairingInfo.all_ips.length > 0 ? (
-                    // 推荐的 IP 放到最前面
-                    [...pairingInfo.all_ips].sort((a, b) => {
-                      if (a === pairingInfo.local_ip) return -1;
-                      if (b === pairingInfo.local_ip) return 1;
+              {/* 本地模式：显示 IP 选择器 */}
+              {isLocal && allIps.length > 0 && (
+                <div className="info-item">
+                  <div className="info-label">选择本机 IP（点击切换）</div>
+                  <div className="ip-selector">
+                    {[...allIps].sort((a, b) => {
+                      if (a === recommendedIp) return -1;
+                      if (b === recommendedIp) return 1;
                       return 0;
                     }).map(ip => (
                       <button
@@ -260,23 +289,21 @@ export default function Pairing() {
                         onClick={() => setSelectedIp(ip)}
                       >
                         {ip}
-                        {ip === pairingInfo.local_ip && <span className="recommended">推荐</span>}
+                        {ip === recommendedIp && <span className="recommended">推荐</span>}
                       </button>
-                    ))
-                  ) : (
-                    <div className="info-value">{selectedIp}</div>
-                  )}
+                    ))}
+                  </div>
                 </div>
+              )}
+
+              <div className="info-item">
+                <div className="info-label">QR 码中的服务器地址</div>
+                <div className="info-value code">{getQrServerUrl()}</div>
               </div>
 
               <div className="info-item">
-                <div className="info-label">HTTP 地址</div>
-                <div className="info-value code">http://{selectedIp}:8000</div>
-              </div>
-
-              <div className="info-item">
-                <div className="info-label">WebSocket 地址</div>
-                <div className="info-value code">ws://{selectedIp}:8000/ws</div>
+                <div className="info-label">连接密码</div>
+                <div className="info-value code">{getApiKey() ? '••••••••' : '（未设置）'}</div>
               </div>
 
               <div className="info-item">
@@ -289,7 +316,7 @@ export default function Pairing() {
                   onClick={copyToken}
                   title="点击复制"
                 >
-                  {pairingInfo.token}
+                  {token}
                 </div>
               </div>
 
@@ -297,19 +324,19 @@ export default function Pairing() {
                 <h4>📋 使用说明</h4>
                 <ol>
                   <li>打开微信小程序</li>
-                  <li>进入"首页"</li>
+                  <li>进入"设置"页面</li>
                   <li>点击"扫码配对"按钮</li>
                   <li>扫描上方二维码</li>
-                  <li>自动填入服务器地址并连接</li>
+                  <li>自动填入服务器地址、密码，并与桌面端联动</li>
                 </ol>
               </div>
 
               <div className="security-note">
-                <h4>🔒 安全说明</h4>
+                <h4>🔒 扫码包含的内容</h4>
                 <ul>
-                  <li>配对 Token 有效期 5 分钟</li>
-                  <li>仅限局域网设备访问</li>
-                  <li>Token 使用后自动失效</li>
+                  <li>服务器地址（{isLocal ? '本机局域网 IP' : '远程服务器地址'}）</li>
+                  <li>连接密码（小程序自动保存）</li>
+                  <li>配对 Token（5分钟有效，一次性，用于 WebSocket 联动授权）</li>
                 </ul>
               </div>
             </div>
@@ -382,5 +409,3 @@ export default function Pairing() {
     </div>
   );
 }
-
-

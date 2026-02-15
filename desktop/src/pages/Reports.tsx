@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config';
+import { apiFetch } from '../config';
 import './Reports.css';
 
 // ===================== 类型定义 =====================
@@ -170,7 +170,7 @@ export default function Reports() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE_URL}/reports/sales_daily?date=${selectedDate}`);
+      const response = await apiFetch(`/reports/sales_daily?date=${selectedDate}`);
       if (response.ok) {
         setDailyReport(await response.json());
       } else {
@@ -187,7 +187,7 @@ export default function Reports() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE_URL}/reports/top_products?days=${days}`);
+      const response = await apiFetch(`/reports/top_products?days=${days}`);
       if (response.ok) {
         setTopProducts(await response.json());
       } else {
@@ -204,7 +204,7 @@ export default function Reports() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE_URL}/reports/slow_movers?days=${days}&min_stock=0`);
+      const response = await apiFetch(`/reports/slow_movers?days=${days}&min_stock=0`);
       if (response.ok) {
         setSlowMovers(await response.json());
       } else {
@@ -221,13 +221,13 @@ export default function Reports() {
     setLoading(true);
     setError('');
     try {
-      let url = `${API_BASE_URL}/reports/profit?include_no_cost=${includeNoCost}`;
+      let path = `/reports/profit?include_no_cost=${includeNoCost}`;
       if (profitDateMode === 'custom') {
-        url += `&start_date=${profitStartDate}&end_date=${profitEndDate}`;
+        path += `&start_date=${profitStartDate}&end_date=${profitEndDate}`;
       } else {
-        url += `&days=${days}`;
+        path += `&days=${days}`;
       }
-      const response = await fetch(url);
+      const response = await apiFetch(path);
       if (response.ok) {
         setProfitReport(await response.json());
       } else {
@@ -244,8 +244,8 @@ export default function Reports() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/analysis/restock_suggestion?days=${days}&safety_stock_days=${safetyStockDays}`
+      const response = await apiFetch(
+        `/analysis/restock_suggestion?days=${days}&safety_stock_days=${safetyStockDays}`
       );
       if (response.ok) {
         setRestockSuggestions(await response.json());
@@ -263,8 +263,8 @@ export default function Reports() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/analysis/anomaly_detection?days=${days}&threshold_std=2.0`
+      const response = await apiFetch(
+        `/analysis/anomaly_detection?days=${days}&threshold_std=2.0`
       );
       if (response.ok) {
         setAnomalies(await response.json());

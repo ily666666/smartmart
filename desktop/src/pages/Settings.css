@@ -779,3 +779,102 @@ input:disabled + .slider {
 .modal-actions button {
   flex: 1;
 }
+
+/* ========== 服务器配置 ========== */
+.server-config-grid {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.server-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.server-input-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.server-input-group input {
+  padding: 10px 14px;
+  border: 2px solid #ecf0f1;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.server-input-group input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.server-input-group.port input {
+  text-align: center;
+}
+
+.optional-hint {
+  font-weight: 400;
+  color: #aaa;
+  font-size: 12px;
+}
+
+.server-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.server-status-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.server-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ccc;
+}
+
+.server-dot.ok {
+  background: #2ecc71;
+  box-shadow: 0 0 6px #2ecc71;
+}
+
+.server-dot.fail {
+  background: #e74c3c;
+}
+
+.server-dot.unknown {
+  background: #ccc;
+}
+
+.server-status-text {
+  font-size: 13px;
+  color: #777;
+}
+
+.server-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.remote-badge {
+  display: inline-block;
+  background: #3498db;
+  color: white;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  vertical-align: middle;
+}

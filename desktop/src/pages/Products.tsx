@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { API_BASE_URL } from '../config';
+import { apiFetch, getApiBaseUrl } from '../config';
 import './Products.css';
 
 interface Product {
@@ -106,8 +106,8 @@ const Products = () => {
     
     try {
       // 使用搜索接口查找商品
-      const response = await fetch(
-        `${API_BASE_URL}/products/search?q=${encodeURIComponent(barcode)}`
+      const response = await apiFetch(
+        `/products/search?q=${encodeURIComponent(barcode)}`
       );
       
       if (response.ok) {
@@ -333,7 +333,7 @@ const Products = () => {
 
   const loadCategories = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/products/categories`);
+      const response = await apiFetch('/products/categories');
       if (response.ok) {
         const data = await response.json();
         setCategories(data.categories || []);
@@ -347,12 +347,12 @@ const Products = () => {
     setLoading(true);
     try {
       const skip = (page - 1) * pageSize;
-      let url = `${API_BASE_URL}/products/?skip=${skip}&limit=${pageSize}`;
+      let path = `/products/?skip=${skip}&limit=${pageSize}`;
       if (selectedCategory) {
-        url += `&category=${encodeURIComponent(selectedCategory)}`;
+        path += `&category=${encodeURIComponent(selectedCategory)}`;
       }
       
-      const response = await fetch(url);
+      const response = await apiFetch(path);
       
       if (response.ok) {
         const data = await response.json();
@@ -396,8 +396,8 @@ const Products = () => {
     setLoading(true);
     try {
       // 使用新的搜索接口（支持条码和名称）
-      const response = await fetch(
-        `${API_BASE_URL}/products/search?q=${encodeURIComponent(searchQuery)}`
+      const response = await apiFetch(
+        `/products/search?q=${encodeURIComponent(searchQuery)}`
       );
       
       if (response.ok) {
@@ -444,7 +444,7 @@ const Products = () => {
       if (selectedImage) {
         const imageFormData = new FormData();
         imageFormData.append('file', selectedImage);
-        const uploadResponse = await fetch(`${API_BASE_URL}/products/upload_image`, {
+        const uploadResponse = await apiFetch('/products/upload_image', {
           method: 'POST',
           body: imageFormData,
         });
@@ -471,7 +471,7 @@ const Products = () => {
         params.append('image_url', uploadedImageUrl);
       }
 
-      const response = await fetch(`${API_BASE_URL}/products/`, {
+      const response = await apiFetch('/products/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: params,
@@ -514,7 +514,7 @@ const Products = () => {
     setShowEditModal(true);
     // 显示现有图片
     if (product.image_url) {
-      setImagePreview(`${API_BASE_URL}${product.image_url}`);
+      setImagePreview(`${getApiBaseUrl()}${product.image_url}`);
     }
   };
 
@@ -529,7 +529,7 @@ const Products = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
+      const response = await apiFetch(`/products/${productId}`, {
         method: 'DELETE',
       });
 
@@ -563,7 +563,7 @@ const Products = () => {
       if (selectedImage) {
         const imageFormData = new FormData();
         imageFormData.append('file', selectedImage);
-        const uploadResponse = await fetch(`${API_BASE_URL}/products/upload_image`, {
+        const uploadResponse = await apiFetch('/products/upload_image', {
           method: 'POST',
           body: imageFormData,
         });
@@ -589,7 +589,7 @@ const Products = () => {
         formData.append('image_url', uploadedImageUrl);
       }
 
-      const response = await fetch(`${API_BASE_URL}/products/${editingProduct.id}`, {
+      const response = await apiFetch(`/products/${editingProduct.id}`, {
         method: 'PUT',
         body: formData,
       });
@@ -624,7 +624,7 @@ const Products = () => {
       formData.append('file', file);
 
       try {
-        const response = await fetch(`${API_BASE_URL}/products/import_csv`, {
+        const response = await apiFetch('/products/import_csv', {
           method: 'POST',
           body: formData,
         });
@@ -831,7 +831,7 @@ const Products = () => {
                   <span className="col-thumb">
                     {product.image_url ? (
                       <img 
-                        src={`${API_BASE_URL}${product.image_url}`} 
+                        src={`${getApiBaseUrl()}${product.image_url}`} 
                         alt={product.name}
                         className="product-thumb"
                         onError={(e) => {
@@ -1119,7 +1119,7 @@ const Products = () => {
               <div className="detail-image-section">
                 {viewingProduct.image_url ? (
                   <img 
-                    src={`${API_BASE_URL}${viewingProduct.image_url}`} 
+                    src={`${getApiBaseUrl()}${viewingProduct.image_url}`} 
                     alt={viewingProduct.name}
                     className="detail-image"
                     onError={(e) => {

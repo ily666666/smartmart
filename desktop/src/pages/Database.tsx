@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { API_BASE_URL } from '../config';
+import { apiFetch } from '../config';
 import './Database.css';
 
 interface TableInfo {
@@ -39,7 +39,7 @@ const Database = () => {
   const loadTables = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/database/tables`);
+      const response = await apiFetch('/database/tables');
       if (response.ok) {
         const data = await response.json();
         setTables(data.tables || []);
@@ -54,7 +54,7 @@ const Database = () => {
   // 加载统计信息
   const loadStats = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/database/stats`);
+      const response = await apiFetch('/database/stats');
       if (response.ok) {
         const data = await response.json();
         setStats(data);
@@ -71,8 +71,8 @@ const Database = () => {
     setLoadingData(true);
     try {
       const skip = (page - 1) * pageSize;
-      const response = await fetch(
-        `${API_BASE_URL}/database/tables/${tableName}?skip=${skip}&limit=${pageSize}`
+      const response = await apiFetch(
+        `/database/tables/${tableName}?skip=${skip}&limit=${pageSize}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -141,8 +141,8 @@ const Database = () => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/database/tables/${selectedTable}/records?ids=${selectedIds.join(',')}`,
+      const response = await apiFetch(
+        `/database/tables/${selectedTable}/records?ids=${selectedIds.join(',')}`,
         { method: 'DELETE' }
       );
 
@@ -170,8 +170,8 @@ const Database = () => {
     }
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/database/tables/${selectedTable}/clear?confirm=CONFIRM_CLEAR`,
+      const response = await apiFetch(
+        `/database/tables/${selectedTable}/clear?confirm=CONFIRM_CLEAR`,
         { method: 'DELETE' }
       );
 
@@ -196,8 +196,8 @@ const Database = () => {
   // 导出表数据
   const handleExport = async (format: 'json' | 'csv') => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/database/tables/${selectedTable}/export?format=${format}`
+      const response = await apiFetch(
+        `/database/tables/${selectedTable}/export?format=${format}`
       );
 
       if (response.ok) {

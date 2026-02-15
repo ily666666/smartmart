@@ -27,8 +27,10 @@ RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.s
     rm /tmp/miniconda.sh && \
     conda clean -afy
 
-# 创建 Python 3.11 环境
-RUN conda create -n smartmart python=3.11 -y && \
+# 接受 conda 服务条款 + 创建 Python 3.11 环境
+RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r && \
+    conda create -n smartmart python=3.11 -y && \
     conda clean -afy
 
 # 激活环境（让后续命令都在 smartmart 环境中执行）
@@ -37,7 +39,7 @@ ENV CONDA_DEFAULT_ENV=smartmart
 
 # ==================== 安装 PyTorch + faiss-gpu（通过 conda 一次搞定） ====================
 RUN conda install -n smartmart -c pytorch -c nvidia \
-    pytorch torchvision torchaudio pytorch-cuda=12.6 \
+    pytorch torchvision torchaudio pytorch-cuda=12.4 \
     faiss-gpu -y && \
     conda clean -afy
 

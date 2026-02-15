@@ -32,8 +32,9 @@ function parseServerUrl(serverUrl) {
     return url.replace(/\/+$/, '')
   }
   
-  // 没有协议，默认使用 http
-  return `http://${url}`
+  // 没有协议：IP 地址用 http，域名用 https
+  const isIP = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(url)
+  return isIP ? `http://${url}` : `https://${url}`
 }
 
 /**

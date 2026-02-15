@@ -10,7 +10,7 @@ Page({
     uploading: false,        // 上传中
     candidates: [],          // 候选商品列表
     sampleId: null,          // 样本ID
-    wsConnected: false,      // WebSocket 连接状态
+    desktopConnected: false, // 桌面端 WebSocket 是否连接
     serverConfigured: false, // 服务器是否已配置
     cameraReady: false,      // 相机是否就绪
     flashMode: 'off',        // 闪光灯模式
@@ -78,7 +78,7 @@ Page({
   onShow() {
     // vision 页面不再是 Tab 页面，从采集中心进入
     this.setData({
-      wsConnected: app.globalData.wsConnected,
+      desktopConnected: !!app.globalData.socketTask,
       serverConfigured: !!app.globalData.serverUrl
     })
   },

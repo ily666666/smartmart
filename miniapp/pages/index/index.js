@@ -10,6 +10,10 @@ Page({
     // 搜索
     searchQuery: '',
     searching: false,
+    // 持续扫码模式
+    scanMode: false,       // 是否处于持续扫码模式
+    cameraReady: false,    // 相机是否就绪
+    flashMode: 'off',      // 闪光灯
     // 购物车
     cartItems: [],       // [{id, barcode, name, price, quantity, subtotal}]
     totalAmount: 0,
@@ -19,6 +23,11 @@ Page({
     // 最后添加的商品（用于提示）
     lastAddedItem: null
   },
+
+  // 持续扫码：防重复
+  _scannedCodes: {},
+  _currentVisibleCode: null,
+  _visibleCodeTimer: null,
 
   onLoad() {
     console.log('收银台页面加载')
@@ -44,6 +53,24 @@ Page({
     }
   },
 
+  onHide() {
+    // 页面隐藏时关闭持续扫码
+    if (this.data.scanMode) {
+      this.setData({ scanMode: false, cameraReady: false, flashMode: 'off' })
+    }
+    this._clearScanState()
+  },
+
+  // 清除扫码状态
+  _clearScanState() {
+    if (this._visibleCodeTimer) {
+      clearTimeout(this._visibleCodeTimer)
+      this._visibleCodeTimer = null
+    }
+    this._scannedCodes = {}
+    this._currentVisibleCode = null
+  },
+
   // ========== 搜索/扫码 ==========
 
   // 搜索输入
@@ -58,7 +85,7 @@ Page({
     this.lookupProduct(query)
   },
 
-  // 扫码
+  // 单次扫码（调用系统相机）
   scanBarcode() {
     if (!this.checkConnection()) return
 
@@ -76,6 +103,89 @@ Page({
           wx.showToast({ title: '扫码失败', icon: 'none' })
         }
       }
+    })
+  },
+
+  // ========== 持续扫码模式 ==========
+
+  // 开启/关闭持续扫码
+  toggleScanMode() {
+    if (!this.checkConnection()) return
+
+    const newMode = !this.data.scanMode
+    if (newMode) {
+      // 开启持续扫码
+      this._clearScanState()
+      this.setData({ scanMode: true })
+      // 延迟初始化相机
+      setTimeout(() => {
+        this.setData({ cameraReady: true })
+      }, 300)
+    } else {
+      // 关闭持续扫码
+      this.setData({ scanMode: false, cameraReady: false, flashMode: 'off' })
+      this._clearScanState()
+    }
+  },
+
+  // 相机持续扫码回调
+  onScanCode(e) {
+    const { result } = e.detail
+    if (!result) return
+
+    // 防重复逻辑（和采集扫码一样）
+    this._currentVisibleCode = result
+
+    if (this._visibleCodeTimer) {
+      clearTimeout(this._visibleCodeTimer)
+    }
+
+    // 条码离开画面 800ms 后解锁，允许再次扫同一个
+    this._visibleCodeTimer = setTimeout(() => {
+      if (this._currentVisibleCode && this._scannedCodes[this._currentVisibleCode]) {
+        delete this._scannedCodes[this._currentVisibleCode]
+      }
+      this._currentVisibleCode = null
+    }, 800)
+
+    // 同一条码在画面中时不重复处理
+    if (this._scannedCodes[result]) {
+      return
+    }
+
+    console.log('✅ 持续扫码:', result)
+    this._scannedCodes[result] = true
+
+    // 震动反馈
+    wx.vibrateShort({ type: 'medium' })
+
+    // 自动查找商品并加入购物车
+    this.setData({ searchQuery: result })
+    this.lookupProduct(result)
+  },
+
+  // 相机错误
+  onCameraError(e) {
+    console.error('相机错误:', e.detail)
+    wx.showModal({
+      title: '相机错误',
+      content: '无法访问相机，请检查权限设置或使用单次扫码',
+      confirmText: '去设置',
+      cancelText: '关闭',
+      success: (res) => {
+        if (res.confirm) {
+          wx.openSetting()
+        } else {
+          this.setData({ scanMode: false, cameraReady: false })
+        }
+      }
+    })
+  },
+
+  // 切换闪光灯
+  toggleFlash() {
+    this.setData({
+      flashMode: this.data.flashMode === 'off' ? 'on' : 'off'
     })
   },
 
@@ -97,12 +207,12 @@ Page({
           const products = res.data.products
           if (products.length === 0) {
             wx.showToast({ title: '未找到商品', icon: 'none' })
-          } else if (products.length === 1 || res.data.type === 'exact') {
-            // 精确匹配或只有一个结果，直接加入购物车
+          } else if (res.data.type === 'exact') {
+            // 条码精确匹配，直接加入购物车
             this.addToCart(products[0])
             this.setData({ searchQuery: '' })
           } else {
-            // 多个结果，让用户选择
+            // 名称搜索，不管几个结果都让用户确认选择
             this.showProductPicker(products)
           }
         } else {

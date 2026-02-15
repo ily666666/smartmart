@@ -3,8 +3,8 @@
   <!-- 状态栏 -->
   <view class="status-bar">
     <view class="status-item">
-      <view class="status-dot {{wsConnected ? 'connected' : (serverConfigured ? 'partial' : 'disconnected')}}"></view>
-      <text>{{wsConnected ? '桌面端已连接' : (serverConfigured ? '桌面端未连接（可识别）' : '未配置')}}</text>
+      <view class="status-dot {{desktopConnected ? 'connected' : (serverConfigured ? 'partial' : 'disconnected')}}"></view>
+      <text>{{desktopConnected ? '桌面端已连接' : (serverConfigured ? '服务器已连接（可识别）' : '未配置')}}</text>
     </view>
   </view>
 

@@ -5,7 +5,7 @@ const app = getApp()
 
 Page({
   data: {
-    wsConnected: false,
+    desktopConnected: false,  // 桌面端 WebSocket 是否连接
     serverConfigured: false,  // 服务器是否已配置（不要求桌面端在线）
     cameraReady: false,
     flashMode: 'off',
@@ -24,7 +24,7 @@ Page({
 
   onLoad() {
     this.setData({
-      wsConnected: app.globalData.wsConnected,
+      desktopConnected: !!app.globalData.socketTask,
       serverConfigured: !!app.globalData.serverUrl
     })
     
@@ -80,7 +80,7 @@ Page({
   onShow() {
     // scan 页面不再是 Tab 页面，从采集中心进入
     this.setData({
-      wsConnected: app.globalData.wsConnected,
+      desktopConnected: !!app.globalData.socketTask,
       serverConfigured: !!app.globalData.serverUrl
     })
   },
@@ -248,9 +248,8 @@ Page({
     const socketTask = app.globalData.socketTask
     const deviceId = app.globalData.deviceId
     
-    if (!socketTask || !app.globalData.wsConnected) {
-      console.error('❌ WebSocket 未连接')
-      this.setData({ wsConnected: false })
+    if (!socketTask) {
+      console.log('⚠️ 桌面端 WebSocket 未连接，跳过发送')
       return false
     }
     

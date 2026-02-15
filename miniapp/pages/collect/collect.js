@@ -3,7 +3,7 @@ const app = getApp()
 
 Page({
   data: {
-    wsConnected: false,
+    desktopConnected: false,
     serverConfigured: false,
     features: [
       {
@@ -45,7 +45,7 @@ Page({
     
     // 更新连接状态
     this.setData({
-      wsConnected: app.globalData.wsConnected,
+      desktopConnected: !!app.globalData.socketTask,
       serverConfigured: !!app.globalData.serverUrl
     })
   },
@@ -70,7 +70,7 @@ Page({
     }
     
     // 如果桌面端未连接，提醒但不阻止
-    if (!app.globalData.wsConnected) {
+    if (!app.globalData.socketTask) {
       wx.showToast({
         title: '桌面端未连接，仅支持识别',
         icon: 'none',

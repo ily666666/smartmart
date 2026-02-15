@@ -60,7 +60,7 @@
 
 /* ========== 搜索栏 ========== */
 .search-section {
-  padding: 20rpx 24rpx 0;
+  padding: 16rpx 24rpx 0;
 }
 
 .search-bar {
@@ -113,14 +113,16 @@
   to { transform: rotate(360deg); }
 }
 
+/* ========== 扫码按钮 ========== */
 .scan-btn {
-  width: 88rpx;
+  width: 130rpx;
   height: 88rpx;
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
   border-radius: 16rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8rpx;
   flex-shrink: 0;
   box-shadow: 0 4rpx 16rpx rgba(79, 70, 229, 0.3);
 }
@@ -129,21 +131,171 @@
   transform: scale(0.95);
 }
 
-.scan-icon {
-  font-size: 40rpx;
+.scan-btn-continuous {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 4rpx 16rpx rgba(16, 185, 129, 0.3);
+}
+
+.scan-btn-active {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 4rpx 16rpx rgba(239, 68, 68, 0.3);
+}
+
+.scan-btn-icon {
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.scan-btn-label {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: white;
+  line-height: 1;
+}
+
+/* ========== 持续扫码相机 ========== */
+.continuous-camera-wrap {
+  margin-top: 12rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  background: #1a1a2e;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.12);
+}
+
+.continuous-camera {
+  width: 100%;
+  height: 300rpx;
+}
+
+/* 扫描遮罩 */
+.camera-scan-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 扫描框 */
+.camera-scan-frame {
+  width: 420rpx;
+  height: 200rpx;
+  position: relative;
+  border: 2rpx solid rgba(255, 255, 255, 0.2);
+  border-radius: 12rpx;
+}
+
+.corner {
+  position: absolute;
+  width: 36rpx;
+  height: 36rpx;
+  border-color: #10b981;
+  border-style: solid;
+}
+
+.corner-tl {
+  top: -2rpx;
+  left: -2rpx;
+  border-width: 6rpx 0 0 6rpx;
+  border-radius: 10rpx 0 0 0;
+}
+
+.corner-tr {
+  top: -2rpx;
+  right: -2rpx;
+  border-width: 6rpx 6rpx 0 0;
+  border-radius: 0 10rpx 0 0;
+}
+
+.corner-bl {
+  bottom: -2rpx;
+  left: -2rpx;
+  border-width: 0 0 6rpx 6rpx;
+  border-radius: 0 0 0 10rpx;
+}
+
+.corner-br {
+  bottom: -2rpx;
+  right: -2rpx;
+  border-width: 0 6rpx 6rpx 0;
+  border-radius: 0 0 10rpx 0;
+}
+
+/* 扫描线动画 */
+.scan-line {
+  position: absolute;
+  top: 16rpx;
+  left: 16rpx;
+  right: 16rpx;
+  height: 4rpx;
+  background: linear-gradient(90deg, transparent, #10b981, transparent);
+  animation: scanLineMove 2s ease-in-out infinite;
+}
+
+@keyframes scanLineMove {
+  0%, 100% { top: 16rpx; }
+  50% { top: calc(100% - 20rpx); }
+}
+
+.camera-scan-tip {
+  margin-top: 16rpx;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6rpx 24rpx;
+  border-radius: 20rpx;
+}
+
+/* 相机工具栏 */
+.camera-toolbar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12rpx 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.camera-tool-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  color: white;
+  padding: 8rpx 28rpx;
+  border-radius: 24rpx;
+}
+
+.camera-tool-item:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.close-item {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.tool-icon {
+  font-size: 28rpx;
+}
+
+.tool-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* 添加成功提示 */
 .add-toast {
-  margin-top: 12rpx;
-  padding: 12rpx 24rpx;
+  margin-top: 8rpx;
+  padding: 8rpx 20rpx;
   background: #ecfdf5;
-  border-radius: 10rpx;
+  border-radius: 8rpx;
   text-align: center;
 }
 
 .add-toast text {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #059669;
 }
 

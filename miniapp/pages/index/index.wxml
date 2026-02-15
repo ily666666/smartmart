@@ -20,7 +20,7 @@
         <text class="search-icon">🔍</text>
         <input
           class="search-input"
-          placeholder="扫码或输入商品名称/条码"
+          placeholder="商品名称/条码"
           value="{{searchQuery}}"
           bindinput="onSearchInput"
           bindconfirm="doSearch"
@@ -32,12 +32,52 @@
         </view>
       </view>
       <view class="scan-btn" bindtap="scanBarcode">
-        <text class="scan-icon">📷</text>
+        <text class="scan-btn-icon">📷</text>
+        <text class="scan-btn-label">扫码</text>
+      </view>
+      <view class="scan-btn {{scanMode ? 'scan-btn-active' : 'scan-btn-continuous'}}" bindtap="toggleScanMode">
+        <text class="scan-btn-icon">{{scanMode ? '⏹' : '📹'}}</text>
+        <text class="scan-btn-label">{{scanMode ? '停止' : '连扫'}}</text>
       </view>
     </view>
+
+    <!-- 持续扫码相机区域 -->
+    <view class="continuous-camera-wrap" wx:if="{{scanMode}}">
+      <camera
+        wx:if="{{cameraReady}}"
+        class="continuous-camera"
+        mode="scanCode"
+        resolution="medium"
+        flash="{{flashMode}}"
+        bindscancode="onScanCode"
+        binderror="onCameraError"
+      >
+        <cover-view class="camera-scan-overlay">
+          <cover-view class="camera-scan-frame">
+            <cover-view class="corner corner-tl"></cover-view>
+            <cover-view class="corner corner-tr"></cover-view>
+            <cover-view class="corner corner-bl"></cover-view>
+            <cover-view class="corner corner-br"></cover-view>
+            <cover-view class="scan-line"></cover-view>
+          </cover-view>
+          <cover-view class="camera-scan-tip">对准条码自动添加</cover-view>
+        </cover-view>
+      </camera>
+      <view class="camera-toolbar">
+        <view class="camera-tool-item" bindtap="toggleFlash">
+          <text class="tool-icon">{{flashMode === 'on' ? '🔦' : '💡'}}</text>
+          <text class="tool-text">闪光灯</text>
+        </view>
+        <view class="camera-tool-item close-item" bindtap="toggleScanMode">
+          <text class="tool-icon">⏹</text>
+          <text class="tool-text">关闭</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 添加成功提示 -->
     <view class="add-toast" wx:if="{{lastAddedItem}}">
-      <text>✅ 已添加: {{lastAddedItem}}</text>
+      <text>✅ {{lastAddedItem}}</text>
     </view>
   </view>
 

@@ -42,6 +42,11 @@ ENV PATH=$CONDA_DIR/envs/smartmart/bin:$PATH
 ENV CONDA_DEFAULT_ENV=smartmart
 
 # ==================== 通过 conda 安装 AI 相关依赖（避免版本冲突） ====================
+# 配置 conda 网络：超时 600s，重试 5 次
+RUN conda config --set remote_connect_timeout_secs 600 && \
+    conda config --set remote_read_timeout_secs 600 && \
+    conda config --set remote_max_retries 5
+
 RUN conda install -n smartmart -c pytorch -c nvidia -c huggingface -c conda-forge \
     pytorch torchvision torchaudio pytorch-cuda=12.4 \
     faiss-gpu \

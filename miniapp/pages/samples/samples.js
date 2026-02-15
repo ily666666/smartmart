@@ -190,7 +190,7 @@ Page({
           
           for (const file of res.tempFiles) {
             await new Promise((resolve, reject) => {
-              wx.uploadFile({
+              app.uploadFile({
                 url: `${apiUrl}/api/samples/samples/${selectedSample.sku_id}/upload`,
                 filePath: file.tempFilePath,
                 name: 'file',

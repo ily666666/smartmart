@@ -208,7 +208,7 @@ Page({
     const apiUrl = getApiUrl(app.globalData.serverUrl)
     
     return new Promise((resolve, reject) => {
-      wx.uploadFile({
+      app.uploadFile({
         url: `${apiUrl}/products/upload_image`,
         filePath: filePath,
         name: 'file',

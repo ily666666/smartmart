@@ -266,7 +266,7 @@ Page({
     
     this.setData({ uploading: true })
     
-    wx.uploadFile({
+    app.uploadFile({
       url: `http://${serverUrl}/vision/query`,
       filePath: imagePath,
       name: 'image',

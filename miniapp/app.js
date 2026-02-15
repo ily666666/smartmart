@@ -90,6 +90,21 @@ App({
   },
 
   /**
+   * 全局上传方法，自动注入 API Key
+   * 用法：app.uploadFile({...}) 替代 wx.uploadFile({...})
+   */
+  uploadFile(options) {
+    const header = options.header || {}
+    if (!header['X-API-Key'] && this.globalData.apiKey) {
+      header['X-API-Key'] = this.globalData.apiKey
+    }
+    return wx.uploadFile({
+      ...options,
+      header
+    })
+  },
+
+  /**
    * 检查服务器健康状态（HTTP 方式）
    * /health 接口不需要密码
    * @returns {Promise<boolean>} 是否连接成功

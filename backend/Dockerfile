@@ -50,7 +50,7 @@ RUN conda config --set remote_connect_timeout_secs 600 && \
 RUN conda install -n smartmart -c pytorch -c nvidia -c huggingface -c conda-forge \
     pytorch torchvision torchaudio pytorch-cuda=12.4 \
     faiss-gpu \
-    transformers \
+    "transformers>=4.36,<5" \
     -y && \
     conda clean -afy
 

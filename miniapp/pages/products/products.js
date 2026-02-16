@@ -20,8 +20,19 @@ Page({
     apiUrl: ''
   },
 
+  // 是否需要刷新列表（首次加载、编辑/删除商品后需要）
+  _needRefresh: true,
+
+  /**
+   * 供详情页调用：标记列表需要刷新
+   * 在详情页编辑/删除商品后调用，返回列表时自动刷新
+   */
+  markNeedRefresh() {
+    this._needRefresh = true
+  },
+
   onLoad() {
-    //
+    this._needRefresh = true
   },
 
   onShow() {
@@ -37,10 +48,14 @@ Page({
       apiUrl
     })
     
-    // 加载数据
+    // 只在需要刷新时重新加载（首次进入、编辑/删除商品后）
+    // 单纯查看详情返回时保持原列表和滚动位置
     if (app.globalData.wsConnected) {
       this.loadCategories()
-      this.loadProducts(true)
+      if (this._needRefresh || this.data.products.length === 0) {
+        this.loadProducts(true)
+        this._needRefresh = false
+      }
     }
   },
 

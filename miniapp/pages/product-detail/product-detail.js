@@ -524,6 +524,7 @@ Page({
         
         if (res.statusCode === 200) {
           wx.showToast({ title: '添加成功', icon: 'success' })
+          this._notifyListRefresh()
           wx.navigateBack()
           return
         } else {
@@ -567,6 +568,8 @@ Page({
           wx.setNavigationBarTitle({ title: '商品详情' })
           // 重新加载商品数据和图片，确保页面立即显示最新内容
           this.loadProduct(productId)
+          // 通知商品列表页返回时刷新
+          this._notifyListRefresh()
         } else {
           throw new Error(res.data?.detail || '保存失败')
         }
@@ -604,6 +607,16 @@ Page({
     }
   },
 
+  // 通知商品列表页需要刷新（编辑/删除后返回时自动刷新）
+  _notifyListRefresh() {
+    const pages = getCurrentPages()
+    // 上一页就是商品列表页
+    const listPage = pages[pages.length - 2]
+    if (listPage && listPage.markNeedRefresh) {
+      listPage.markNeedRefresh()
+    }
+  },
+
   // 删除商品
   deleteProduct() {
     wx.showModal({
@@ -625,6 +638,7 @@ Page({
             
             if (response.statusCode === 200) {
               wx.showToast({ title: '删除成功', icon: 'success' })
+              this._notifyListRefresh()
               wx.navigateBack()
             } else {
               throw new Error('删除失败')

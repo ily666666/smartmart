@@ -76,7 +76,7 @@ RUN pip install --no-cache-dir \
     "python-multipart>=0.0.6" \
     "pillow>=10.2.0" \
     "websockets>=12.0" \
-    "numpy>=1.26.0" \
+    "numpy>=1.26.0,<2" \
     "httpx>=0.25.0" \
     "tqdm>=4.66.0" \
     "rapidocr" \

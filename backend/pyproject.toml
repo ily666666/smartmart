@@ -21,7 +21,7 @@ dependencies = [
     "websockets>=12.0",
     
     # ========== AI 识别模块 ==========
-    "numpy>=1.26.0",
+    "numpy>=1.26.0,<2",
     # torch, torchvision, faiss, transformers 需通过 conda 单独安装
     # GPU: conda install -c pytorch -c nvidia -c conda-forge "pytorch>=2.6" torchvision torchaudio pytorch-cuda=12.4 faiss-gpu
     # CPU: conda install -c pytorch -c conda-forge pytorch torchvision torchaudio cpuonly faiss-cpu

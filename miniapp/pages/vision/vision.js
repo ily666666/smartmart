@@ -254,8 +254,9 @@ Page({
     })
   },
 
-  // 上传图片识别
-  uploadImage(imagePath) {
+  // 上传图片识别（带自动重试）
+  uploadImage(imagePath, retryCount = 0) {
+    const MAX_RETRY = 2  // 最多重试 2 次（共 3 次尝试）
     const serverUrl = app.globalData.serverUrl
     const deviceId = app.globalData.deviceId
     
@@ -318,11 +319,51 @@ Page({
         }
       },
       fail: (error) => {
+        console.error(`❌ 上传失败 (第${retryCount + 1}次):`, error)
+        
+        // 判断是否为连接类错误（connection refused / timeout），自动重试
+        const errMsg = (error.errMsg || '').toLowerCase()
+        const isConnectionError = errMsg.includes('refused') || 
+                                  errMsg.includes('timeout') || 
+                                  errMsg.includes('fail') ||
+                                  errMsg.includes('abort')
+        
+        if (isConnectionError && retryCount < MAX_RETRY) {
+          const delay = (retryCount + 1) * 2000  // 递增延迟: 2秒、4秒
+          console.log(`🔄 ${delay/1000}秒后第${retryCount + 2}次重试...`)
+          wx.showToast({
+            title: `连接失败，正在重试(${retryCount + 2}/${MAX_RETRY + 1})`,
+            icon: 'none',
+            duration: delay
+          })
+          setTimeout(() => {
+            this.uploadImage(imagePath, retryCount + 1)
+          }, delay)
+          return
+        }
+        
+        // 重试用尽或非连接类错误，提示用户
         this.setData({ uploading: false })
-        console.error('❌ 上传失败:', error)
-        wx.showToast({
-          title: '上传失败，请检查网络',
-          icon: 'none'
+        
+        let tipMsg = '上传失败，请检查网络'
+        if (errMsg.includes('refused')) {
+          tipMsg = '连接被拒绝，请确认服务器已启动'
+        } else if (errMsg.includes('timeout')) {
+          tipMsg = '连接超时，请检查服务器是否正常运行'
+        }
+        
+        wx.showModal({
+          title: '识别失败',
+          content: tipMsg + '。是否重试？',
+          confirmText: '重试',
+          cancelText: '取消',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              this.uploadImage(imagePath, 0)
+            } else {
+              this.reset()
+            }
+          }
         })
       }
     })

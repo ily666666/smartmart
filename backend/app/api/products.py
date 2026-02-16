@@ -19,6 +19,80 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
+
+# ==================== 商品图片 → AI 样本同步 ====================
+
+def _sync_image_to_samples(product_id: int, image_file_path: Path):
+    """
+    将商品图片自动复制到 AI 样本目录
+    
+    使用固定文件名 product_img.xxx，这样：
+    - 首次上传：在样本目录新增一张来自商品图片的样本
+    - 更新图片：自动替换掉旧的，不会产生冗余错误样本
+    - 手动上传的样本（img_01, img_02...）不受影响
+    
+    - **product_id**: 商品ID
+    - **image_file_path**: 商品图片在 static/images/products/ 下的完整路径
+    """
+    try:
+        samples_dir = Path(settings.SAMPLES_DIR) / f"sku_{product_id:03d}"
+        samples_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 获取图片扩展名
+        ext = image_file_path.suffix.lower()
+        
+        # 先删除旧的 product_img.* 文件（可能扩展名不同，如 .jpg → .png）
+        image_exts = {'.jpg', '.jpeg', '.png', '.bmp', '.webp'}
+        for old_file in samples_dir.iterdir():
+            if old_file.stem == "product_img" and old_file.suffix.lower() in image_exts:
+                old_file.unlink()
+                logger.info(f"🔄 已移除旧的商品图片样本: {old_file.name}")
+        
+        # 用固定文件名保存，方便后续替换识别
+        new_filename = f"product_img{ext}"
+        target_path = samples_dir / new_filename
+        
+        # 复制文件到样本目录
+        shutil.copy2(image_file_path, target_path)
+        
+        # 统计当前样本总数
+        total_samples = sum(
+            1 for f in samples_dir.iterdir()
+            if f.suffix.lower() in image_exts
+        )
+        
+        logger.info(
+            f"✅ 商品图片已同步到 AI 样本: product_id={product_id}, "
+            f"样本文件={new_filename}, 当前样本总数={total_samples}"
+        )
+        return True
+    except Exception as e:
+        # 同步失败不影响主流程，仅记录日志
+        logger.warning(f"⚠️ 商品图片同步到 AI 样本失败: product_id={product_id}, 错误={e}")
+        return False
+
+
+def _remove_synced_sample(product_id: int):
+    """
+    删除 AI 样本目录中由商品图片自动同步的那张样本（product_img.*）
+    
+    当用户删除商品图片时调用，确保错误的图片不会残留在样本中。
+    手动上传的样本（img_01, img_02...）不受影响。
+    """
+    try:
+        samples_dir = Path(settings.SAMPLES_DIR) / f"sku_{product_id:03d}"
+        if not samples_dir.exists():
+            return
+        
+        image_exts = {'.jpg', '.jpeg', '.png', '.bmp', '.webp'}
+        for old_file in samples_dir.iterdir():
+            if old_file.stem == "product_img" and old_file.suffix.lower() in image_exts:
+                old_file.unlink()
+                logger.info(f"🗑️ 已删除商品图片对应的 AI 样本: product_id={product_id}, 文件={old_file.name}")
+    except Exception as e:
+        logger.warning(f"⚠️ 删除商品图片样本失败: product_id={product_id}, 错误={e}")
+
+
 # ==================== OCR 引擎（延迟加载单例） ====================
 _ocr_engine = None
 
@@ -447,10 +521,14 @@ async def upload_product_image(
     product.image_url = image_url
     db.commit()
     
+    # 自动同步到 AI 样本目录（商品图片也作为 AI 识别样本）
+    sample_synced = _sync_image_to_samples(product_id, file_path)
+    
     return {
         "message": "图片上传成功",
         "image_url": image_url,
-        "product_id": product_id
+        "product_id": product_id,
+        "sample_synced": sample_synced
     }
 
 
@@ -543,6 +621,9 @@ async def delete_product_image(
     if file_path.exists():
         file_path.unlink()
     
+    # 同时删除 AI 样本目录中由商品图片自动同步的那张样本
+    _remove_synced_sample(product_id)
+    
     # 更新数据库
     product.image_url = None
     db.commit()
@@ -609,11 +690,22 @@ async def update_product(
             raise HTTPException(status_code=400, detail="库存不能为负数")
         product.stock = stock
     
+    # 记录图片是否发生变更
+    image_changed = False
     if image_url is not None:
+        image_changed = (product.image_url != image_url)
         product.image_url = image_url
     
     db.commit()
     db.refresh(product)
+    
+    # 如果商品图片发生了变更，自动同步新图片到 AI 样本目录
+    sample_synced = False
+    if image_changed and product.image_url:
+        image_filename = os.path.basename(product.image_url)
+        image_file_path = IMAGES_DIR / image_filename
+        if image_file_path.exists():
+            sample_synced = _sync_image_to_samples(product.id, image_file_path)
     
     return {
         "message": "商品更新成功",
@@ -626,7 +718,8 @@ async def update_product(
             "cost_price": product.cost_price,
             "stock": product.stock,
             "image_url": product.image_url,
-        }
+        },
+        "sample_synced": sample_synced
     }
 
 
@@ -652,6 +745,14 @@ async def create_product(
     db.commit()
     db.refresh(product)
     
+    # 如果创建商品时带了图片，自动同步到 AI 样本目录
+    sample_synced = False
+    if product.image_url:
+        image_filename = os.path.basename(product.image_url)
+        image_file_path = IMAGES_DIR / image_filename
+        if image_file_path.exists():
+            sample_synced = _sync_image_to_samples(product.id, image_file_path)
+    
     return {
         "sku_id": product.id,
         "barcode": product.barcode,
@@ -661,5 +762,6 @@ async def create_product(
         "cost_price": product.cost_price,
         "stock": product.stock,
         "image_url": product.image_url,
+        "sample_synced": sample_synced,
     }
 

@@ -8,6 +8,7 @@
 - 基于 **CLIP + FAISS** 的商品外观识别
 - 拍照即可识别商品，无需条码
 - 支持多角度商品图片学习
+- **上传商品图片自动同步为 AI 样本**（无需重复上传）
 - 毫秒级识别响应
 
 ### 桌面收银台
@@ -165,10 +166,13 @@ cd backend
 python scripts/prepare_samples.py --db ./smartmart.db
 
 # 添加商品图片到 ./data/samples/sku_XXX/ 目录（每个商品3-10张）
+# 💡 提示：上传商品图片时会自动复制一份到 AI 样本目录，无需手动重复操作
 
 # 构建 AI 索引
 python scripts/build_index.py
 ```
+
+> **自动同步说明**：当你在商品管理中上传/更新商品图片时，系统会自动将该图片复制到对应的 AI 样本目录（`data/samples/sku_XXX/`）。这意味着商品图片会自动成为 AI 识别训练的一张样本，你只需额外补充几张不同角度的照片即可达到最佳识别效果。
 
 ## Docker 部署（GPU）
 

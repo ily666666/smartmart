@@ -145,9 +145,12 @@ Page({
       onlyFromCamera: false,
       scanType: ['barCode'],
       success: (res) => {
+        const barcode = res.result
         this.setData({
-          'product.barcode': res.result
+          'product.barcode': barcode
         })
+        // 扫码后自动检查条码是否已存在
+        this.checkBarcodeExists(barcode)
       },
       fail: (err) => {
         if (!err.errMsg.includes('cancel')) {
@@ -155,6 +158,49 @@ Page({
         }
       }
     })
+  },
+
+  // 检查条码是否已存在于数据库中
+  async checkBarcodeExists(barcode) {
+    if (!barcode || !barcode.trim()) return
+
+    try {
+      const apiUrl = getApiUrl(app.globalData.serverUrl)
+      const res = await new Promise((resolve, reject) => {
+        app.request({
+          url: `${apiUrl}/products/by_barcode?code=${encodeURIComponent(barcode)}`,
+          method: 'GET',
+          success: resolve,
+          fail: reject
+        })
+      })
+
+      if (res.statusCode === 200 && res.data) {
+        const existProduct = res.data
+        // 条码已存在，弹窗提示商品名和售价
+        wx.showModal({
+          title: '条码已存在',
+          content: `该条码对应商品：\n商品名：${existProduct.name}\n售价：¥${existProduct.price}`,
+          confirmText: '去查看',
+          cancelText: '扫下一个',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              // 跳转到该商品的详情页
+              wx.redirectTo({
+                url: `/pages/product-detail/product-detail?id=${existProduct.sku_id}`
+              })
+            } else {
+              // 清空条码，回到添加页面让用户自己操作
+              this.setData({ 'product.barcode': '' })
+            }
+          }
+        })
+      }
+      // 404 说明条码不存在，正常继续添加流程，无需提示
+    } catch (error) {
+      console.error('检查条码失败:', error)
+      // 网络错误时不阻断流程，静默失败
+    }
   },
 
   // 选择图片

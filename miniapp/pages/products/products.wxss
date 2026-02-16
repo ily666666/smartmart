@@ -33,15 +33,23 @@
 }
 
 .clear-btn {
-  width: 40rpx;
-  height: 40rpx;
+  width: 48rpx;
+  height: 48rpx;
+  min-width: 48rpx;
+  min-height: 48rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #9ca3af;
   color: #ffffff;
   border-radius: 50%;
-  font-size: 24rpx;
+  font-size: 26rpx;
+  /* 扩大触摸热区：视觉圆48rpx + 四周20rpx透明区 = 总触摸区88rpx */
+  padding: 20rpx;
+  margin: -20rpx;
+  margin-left: -12rpx;
+  background-clip: content-box;
+  box-sizing: content-box;
 }
 
 .scan-btn {

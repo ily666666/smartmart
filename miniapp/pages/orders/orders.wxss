@@ -131,8 +131,8 @@
 
 .order-status {
   font-size: 22rpx;
-  padding: 6rpx 16rpx;
-  border-radius: 20rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
 }
 
 .order-status.completed {

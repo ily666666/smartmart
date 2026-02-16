@@ -215,6 +215,7 @@
 .image-actions {
   display: flex;
   justify-content: center;
+  gap: 20rpx;
   margin-top: 16rpx;
 }
 
@@ -228,6 +229,21 @@
 
 .image-action-btn:active {
   background: #fee2e2;
+}
+
+/* OCR 识别按钮 */
+.image-action-btn.ocr-btn {
+  color: #4f46e5;
+  background: #eef2ff;
+}
+
+.image-action-btn.ocr-btn:active {
+  background: #e0e7ff;
+}
+
+.image-action-btn.ocr-btn.disabled {
+  color: #9ca3af;
+  background: #f3f4f6;
 }
 
 .form-item {
@@ -346,4 +362,147 @@
 
 .btn:active {
   opacity: 0.8;
+}
+
+/* ========== OCR 多选弹窗 ========== */
+
+.ocr-modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ocr-modal {
+  width: 85%;
+  max-height: 80vh;
+  background: #ffffff;
+  border-radius: 24rpx;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ocr-modal-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #1f2937;
+  text-align: center;
+  padding: 32rpx 32rpx 8rpx;
+}
+
+.ocr-modal-hint {
+  font-size: 24rpx;
+  color: #9ca3af;
+  text-align: center;
+  padding: 0 32rpx 24rpx;
+}
+
+.ocr-list {
+  max-height: 50vh;
+  padding: 0 24rpx;
+}
+
+.ocr-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 16rpx;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.ocr-item:active {
+  background: #f9fafb;
+}
+
+.ocr-item.selected {
+  background: #eef2ff;
+}
+
+.ocr-checkbox {
+  width: 44rpx;
+  height: 44rpx;
+  border: 3rpx solid #d1d5db;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+  font-size: 28rpx;
+  color: #ffffff;
+}
+
+.ocr-checkbox.checked {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.ocr-text {
+  font-size: 30rpx;
+  color: #1f2937;
+  word-break: break-all;
+}
+
+.ocr-modal-preview {
+  padding: 20rpx 32rpx;
+  background: #f9fafb;
+  border-top: 1rpx solid #e5e7eb;
+  display: flex;
+  align-items: center;
+}
+
+.ocr-preview-label {
+  font-size: 26rpx;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.ocr-preview-text {
+  font-size: 28rpx;
+  color: #4f46e5;
+  font-weight: 600;
+  margin-left: 8rpx;
+  word-break: break-all;
+}
+
+.ocr-modal-buttons {
+  display: flex;
+  border-top: 1rpx solid #e5e7eb;
+}
+
+.ocr-btn-cancel,
+.ocr-btn-confirm {
+  flex: 1;
+  height: 96rpx;
+  line-height: 96rpx;
+  text-align: center;
+  font-size: 32rpx;
+}
+
+.ocr-btn-cancel {
+  color: #6b7280;
+}
+
+.ocr-btn-cancel:active {
+  background: #f3f4f6;
+}
+
+.ocr-btn-confirm {
+  color: #4f46e5;
+  font-weight: 600;
+  border-left: 1rpx solid #e5e7eb;
+}
+
+.ocr-btn-confirm:active {
+  background: #eef2ff;
+}
+
+.ocr-btn-confirm.disabled {
+  color: #d1d5db;
 }

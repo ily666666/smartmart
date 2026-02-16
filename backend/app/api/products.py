@@ -10,11 +10,34 @@ import os
 import shutil
 from pathlib import Path
 import uuid
+import logging
 
 from app.database import get_db
 from app.models.product import Product, PRODUCT_CATEGORIES
 from app.config import settings
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
+
+# ==================== OCR 引擎（延迟加载单例） ====================
+_ocr_engine = None
+
+
+def _get_ocr_engine():
+    """获取 OCR 引擎（延迟加载，首次调用时初始化）"""
+    global _ocr_engine
+    if _ocr_engine is None:
+        try:
+            from rapidocr import RapidOCR
+            _ocr_engine = RapidOCR()
+            logger.info("✅ OCR 引擎初始化成功")
+        except ImportError:
+            logger.warning("⚠️ rapidocr-onnxruntime 未安装，OCR 功能不可用")
+            return None
+        except Exception as e:
+            logger.error(f"❌ OCR 引擎初始化失败: {e}")
+            return None
+    return _ocr_engine
 
 # 使用配置中的静态文件目录
 STATIC_DIR = settings.STATIC_DIR
@@ -292,6 +315,87 @@ async def upload_image(file: UploadFile = File(...)):
         "message": "图片上传成功",
         "image_url": image_url
     }
+
+
+@router.post("/ocr")
+async def ocr_image(file: UploadFile = File(...)):
+    """
+    对上传的图片进行文字识别（OCR）
+    
+    用于从商品图片中识别文字，辅助填写商品名称。
+    
+    - **file**: 图片文件（支持 jpg, jpeg, png, gif, webp）
+    - **返回**: 识别到的文字列表和建议的商品名称
+    """
+    # 验证文件类型
+    allowed_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+    file_ext = os.path.splitext(file.filename)[1].lower() if file.filename else '.jpg'
+    
+    if file_ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"不支持的文件格式。允许的格式: {', '.join(allowed_extensions)}"
+        )
+    
+    # 获取 OCR 引擎
+    engine = _get_ocr_engine()
+    if engine is None:
+        raise HTTPException(
+            status_code=501,
+            detail="OCR 功能未安装，请安装 rapidocr-onnxruntime: pip install rapidocr-onnxruntime"
+        )
+    
+    # 读取图片数据
+    image_data = await file.read()
+    
+    try:
+        import numpy as np
+        from PIL import Image
+        
+        # 将上传的图片转为 numpy 数组
+        img = Image.open(io.BytesIO(image_data))
+        # 确保是 RGB 模式（OCR 不支持 RGBA 等）
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        img_array = np.array(img)
+        
+        # 执行 OCR 识别（新版返回 RapidOCROutput 对象）
+        output = engine(img_array)
+        
+        # 新版 API：通过属性访问结果
+        if not output or not output.txts:
+            return {"texts": [], "suggested_name": "", "message": "未识别到文字"}
+        
+        # 提取识别结果
+        texts = []
+        for txt, score in zip(output.txts, output.scores):
+            text = txt.strip()
+            confidence = float(score)
+            if text:  # 过滤空文本
+                texts.append({"text": text, "confidence": round(confidence, 3)})
+        
+        # 按置信度降序排列
+        texts.sort(key=lambda x: x["confidence"], reverse=True)
+        
+        # 智能推荐商品名称：
+        # 选择置信度最高且长度 >= 2 的文本作为建议名称
+        suggested_name = ""
+        for t in texts:
+            if len(t["text"]) >= 2:
+                suggested_name = t["text"]
+                break
+        
+        logger.info(f"OCR 识别完成: 共识别 {len(texts)} 条文字, 建议名称: {suggested_name}, 耗时: {output.elapse}")
+        
+        return {
+            "texts": texts,
+            "suggested_name": suggested_name,
+            "message": f"识别到 {len(texts)} 条文字"
+        }
+        
+    except Exception as e:
+        logger.error(f"OCR 识别失败: {e}")
+        raise HTTPException(status_code=500, detail=f"文字识别失败: {str(e)}")
 
 
 @router.post("/upload_image/{product_id}")

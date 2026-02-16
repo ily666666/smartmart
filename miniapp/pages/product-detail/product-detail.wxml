@@ -81,6 +81,13 @@
             </view>
           </view>
           <view class="image-actions" wx:if="{{tempImagePath || imageBase64 || product.image_url}}">
+            <view 
+              class="image-action-btn ocr-btn {{recognizing ? 'disabled' : ''}}" 
+              bindtap="onRecognizeText"
+              wx:if="{{tempImagePath}}"
+            >
+              {{recognizing ? '⏳ 识别中...' : '🔍 识别文字'}}
+            </view>
             <view class="image-action-btn" bindtap="removeImage">🗑️ 移除图片</view>
           </view>
         </view>
@@ -177,4 +184,34 @@
       </view>
     </view>
   </block>
+
+  <!-- OCR 文字多选弹窗 -->
+  <view class="ocr-modal-mask" wx:if="{{showOcrPicker}}" bindtap="closeOcrPicker">
+    <view class="ocr-modal" catchtap="noop">
+      <view class="ocr-modal-title">选择商品名称</view>
+      <view class="ocr-modal-hint">点击选择，可多选拼接，按点击顺序组合</view>
+      <scroll-view scroll-y class="ocr-list">
+        <view 
+          class="ocr-item {{item.selected ? 'selected' : ''}}"
+          wx:for="{{ocrItems}}" 
+          wx:key="index"
+          bindtap="toggleOcrItem" 
+          data-index="{{index}}"
+        >
+          <view class="ocr-checkbox {{item.selected ? 'checked' : ''}}">
+            <text wx:if="{{item.selected}}">{{item.order}}</text>
+          </view>
+          <text class="ocr-text">{{item.text}}</text>
+        </view>
+      </scroll-view>
+      <view class="ocr-modal-preview" wx:if="{{ocrPreview}}">
+        <text class="ocr-preview-label">拼接结果：</text>
+        <text class="ocr-preview-text">{{ocrPreview}}</text>
+      </view>
+      <view class="ocr-modal-buttons">
+        <view class="ocr-btn-cancel" bindtap="closeOcrPicker">取消</view>
+        <view class="ocr-btn-confirm {{!ocrPreview ? 'disabled' : ''}}" bindtap="confirmOcrSelection">确定</view>
+      </view>
+    </view>
+  </view>
 </view>

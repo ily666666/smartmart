@@ -10,7 +10,7 @@
 - FastAPI（Web 框架）
 - SQLAlchemy（ORM）
 - SQLite（数据库）
-- Conda / uv（包管理器）
+- Conda（包管理器）
 - WebSocket（设备联动通信）
 - CLIP + FAISS（AI 商品识别）
 - PyTorch + Transformers（深度学习）
@@ -44,19 +44,6 @@ conda install -c pytorch faiss-gpu -y
 pip install -e .
 ```
 
-### 方式二：uv
-
-```bash
-cd backend
-# 安装 uv（如未安装）
-# Windows: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-# macOS/Linux: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-uv sync
-```
-
-> 注意：`faiss-gpu` 无法通过 pip 安装，必须用 conda。如果用 uv/pip 安装其他依赖，faiss 仍需 conda 单独装。
-
 ## 启动服务
 
 ```bash
@@ -64,9 +51,6 @@ conda activate smartmart
 
 # 启动（绑定 0.0.0.0 允许局域网/外网访问）
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
-# 或用 uv
-# uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 启动成功后访问 http://localhost:8000/docs 查看 API 文档。

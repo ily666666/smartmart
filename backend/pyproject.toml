@@ -22,10 +22,16 @@ dependencies = [
     
     # ========== AI 识别模块 ==========
     "numpy>=1.26.0",
-    # torch, torchvision, faiss 需单独安装，见 README
-    # conda install pytorch torchvision torchaudio pytorch-cuda=12.6 -c pytorch -c nvidia
-    # conda install -c pytorch faiss-gpu
-    "transformers>=4.36.0",
+    # torch, torchvision, faiss, transformers 需通过 conda 单独安装
+    # GPU: conda install -c pytorch -c nvidia -c conda-forge "pytorch>=2.6" torchvision torchaudio pytorch-cuda=12.4 faiss-gpu
+    # CPU: conda install -c pytorch -c conda-forge pytorch torchvision torchaudio cpuonly faiss-cpu
+    # conda install -c huggingface -c conda-forge "transformers>=4.36,<5"
+    
+    # ========== OCR 文字识别 ==========
+    "rapidocr",
+    # GPU: pip install onnxruntime-gpu（需 CUDA，与 onnxruntime 二选一）
+    # CPU: pip install onnxruntime（无 GPU 时使用）
+    "onnxruntime",
     
     # ========== 工具 ==========
     "httpx>=0.25.0",

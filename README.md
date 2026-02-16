@@ -26,6 +26,7 @@
 - **独立收银功能**（首页即收银台）- 扫码/搜索添加商品、购物车管理、一键结账
 - 支持持续扫码模式，无需反复打开相机
 - 商品浏览、搜索、详情查看
+- **OCR 文字识别** - 添加商品时上传图片自动识别商品名称
 - 订单列表、订单详情、撤销订单（商品可自动回到桌面端收银台）
 - 采集中心（扫码录入、AI 拍照识别）
 - 销售报表、数据分析
@@ -95,6 +96,7 @@ SmartMartAI/
 |------|------|
 | 后端 | Python 3.11+, FastAPI, SQLAlchemy, SQLite |
 | AI 识别 | CLIP (OpenAI), FAISS, PyTorch, Transformers |
+| OCR 文字识别 | RapidOCR (基于 PaddleOCR, ONNX Runtime) |
 | 桌面端 | Tauri, React 18, TypeScript, Vite |
 | 小程序 | 微信小程序原生开发 |
 | 通信 | WebSocket（设备联动）, REST API（数据操作） |

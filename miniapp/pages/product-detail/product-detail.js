@@ -21,7 +21,11 @@ Page({
     saving: false,
     imageBase64: '', // 用于 显示图片
     tempImagePath: '', // 临时选择的图片路径
-    uploadedImageUrl: '' // 上传后的图片URL
+    uploadedImageUrl: '', // 上传后的图片URL
+    recognizing: false, // OCR 文字识别中
+    showOcrPicker: false, // 是否显示 OCR 文字选择弹窗
+    ocrItems: [], // OCR 识别结果 [{text, selected, order}]
+    ocrPreview: '' // 拼接预览
   },
 
   onLoad(options) {
@@ -246,6 +250,150 @@ Page({
           })
         }
       }
+    })
+  },
+
+  // 手动触发 OCR 文字识别（点击"识别文字"按钮）
+  onRecognizeText() {
+    if (this.data.recognizing) return
+    
+    const filePath = this.data.tempImagePath
+    if (!filePath) {
+      wx.showToast({ title: '请先选择图片', icon: 'none' })
+      return
+    }
+    this.recognizeText(filePath)
+  },
+
+  // OCR 文字识别：上传图片到后端识别文字，自动填入商品名称
+  async recognizeText(filePath) {
+    const apiUrl = getApiUrl(app.globalData.serverUrl)
+    if (!apiUrl) {
+      console.warn('OCR: 服务器地址未配置')
+      return
+    }
+    
+    this.setData({ recognizing: true })
+    
+    try {
+      const res = await new Promise((resolve, reject) => {
+        app.uploadFile({
+          url: `${apiUrl}/products/ocr`,
+          filePath: filePath,
+          name: 'file',
+          success: (res) => {
+            if (res.statusCode === 200) {
+              try {
+                resolve(JSON.parse(res.data))
+              } catch (e) {
+                reject(new Error('解析响应失败'))
+              }
+            } else if (res.statusCode === 501) {
+              // OCR 未安装，静默跳过
+              console.warn('OCR 功能未安装')
+              resolve(null)
+            } else {
+              try {
+                const errData = JSON.parse(res.data)
+                reject(new Error(errData.detail || '识别失败'))
+              } catch (e) {
+                reject(new Error('识别失败'))
+              }
+            }
+          },
+          fail: (err) => reject(new Error(err.errMsg || '网络请求失败'))
+        })
+      })
+      
+      // OCR 未安装时静默跳过
+      if (!res) return
+      
+      // 提取识别文字，去重
+      const textItems = []
+      const seen = new Set()
+      if (res.texts && res.texts.length > 0) {
+        for (const t of res.texts) {
+          const text = t.text.trim()
+          if (text && !seen.has(text)) {
+            seen.add(text)
+            textItems.push(text)
+          }
+        }
+      }
+      
+      if (textItems.length === 0) {
+        wx.showToast({ title: '未识别到有效文字', icon: 'none' })
+      } else {
+        // 打开多选弹窗，让用户选择并组合
+        const ocrItems = textItems.map(text => ({ text, selected: false, order: 0 }))
+        this.setData({
+          showOcrPicker: true,
+          ocrItems: ocrItems,
+          ocrPreview: ''
+        })
+      }
+    } catch (error) {
+      console.error('文字识别失败:', error)
+      wx.showToast({ title: error.message || '识别失败', icon: 'none' })
+    } finally {
+      this.setData({ recognizing: false })
+    }
+  },
+
+  // 空操作，用于阻止事件冒泡
+  noop() {},
+
+  // 切换 OCR 文字选中状态（点击某一项）
+  toggleOcrItem(e) {
+    const index = e.currentTarget.dataset.index
+    const items = this.data.ocrItems
+    const item = items[index]
+    
+    if (item.selected) {
+      // 取消选中：清除该项，并重新排序其他已选项
+      const removedOrder = item.order
+      item.selected = false
+      item.order = 0
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].selected && items[i].order > removedOrder) {
+          items[i].order -= 1
+        }
+      }
+    } else {
+      // 选中：标记并设置顺序
+      const maxOrder = items.reduce((max, it) => it.selected ? Math.max(max, it.order) : max, 0)
+      item.selected = true
+      item.order = maxOrder + 1
+    }
+    
+    // 按选中顺序拼接预览
+    const selectedItems = items.filter(it => it.selected).sort((a, b) => a.order - b.order)
+    const preview = selectedItems.map(it => it.text).join('')
+    
+    this.setData({ ocrItems: items, ocrPreview: preview })
+  },
+
+  // 确认 OCR 选择，填入商品名称
+  confirmOcrSelection() {
+    if (!this.data.ocrPreview) {
+      wx.showToast({ title: '请至少选择一项', icon: 'none' })
+      return
+    }
+    this.setData({
+      'product.name': this.data.ocrPreview,
+      showOcrPicker: false,
+      ocrItems: [],
+      ocrPreview: ''
+    })
+    wx.showToast({ title: '已填入商品名称', icon: 'success' })
+  },
+
+  // 关闭 OCR 选择弹窗
+  closeOcrPicker() {
+    this.setData({
+      showOcrPicker: false,
+      ocrItems: [],
+      ocrPreview: ''
     })
   },
 

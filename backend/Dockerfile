@@ -48,6 +48,8 @@ RUN conda config --set remote_connect_timeout_secs 600 && \
 
 # ==================== 第1层：PyTorch + FAISS（最大，约 2GB，很少改动） ====================
 # PyTorch >= 2.6 修复 CVE-2025-32434（torch.load 安全漏洞）
+# 无 GPU 的机器把下面改为:
+#   conda install -n smartmart -c pytorch -c conda-forge pytorch torchvision torchaudio cpuonly faiss-cpu -y
 RUN conda install -n smartmart -c pytorch -c nvidia -c conda-forge \
     "pytorch>=2.6" torchvision torchaudio pytorch-cuda=12.4 \
     faiss-gpu \
@@ -76,7 +78,10 @@ RUN pip install --no-cache-dir \
     "websockets>=12.0" \
     "numpy>=1.26.0" \
     "httpx>=0.25.0" \
-    "tqdm>=4.66.0"
+    "tqdm>=4.66.0" \
+    "rapidocr" \
+    "onnxruntime-gpu"
+# 无 GPU 的机器把上面 onnxruntime-gpu 改为 onnxruntime
 
 # ==================== 复制应用代码 ====================
 COPY . .

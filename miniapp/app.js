@@ -23,22 +23,25 @@ App({
     console.log('服务器地址:', serverUrl)
     console.log('连接密码:', apiKey ? '已设置' : '未设置')
     
-    // 如果有保存的服务器地址，自动检查连接
+    // 如果有保存的服务器地址，自动检查连接并启动定时重连
     if (serverUrl) {
       this.checkServerHealth()
+      this.startAutoReconnect()
     }
   },
 
   onShow() {
     console.log('小程序显示')
-    // 每次小程序回到前台，重新检查服务器连接
+    // 每次小程序回到前台，立即检查并确保定时重连在运行
     if (this.globalData.serverUrl) {
       this.checkServerHealth()
+      this.startAutoReconnect()
     }
   },
 
   onHide() {
     console.log('小程序隐藏')
+    this.stopAutoReconnect()
   },
 
   onError(error) {
@@ -50,11 +53,42 @@ App({
     return 'miniapp-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9)
   },
 
+  // ==================== 自动重连机制 ====================
+  _reconnectTimer: null,
+
   /**
-   * 全局请求方法，自动注入 API Key 并处理 401
-   * 用法：app.request({...}) 替代 wx.request({...})
+   * 启动定时健康检查（自动重连）
+   * - 连接正常时：每 30 秒检查一次
+   * - 连接断开时：每 5 秒检查一次（快速重连）
    */
-  request(options) {
+  startAutoReconnect() {
+    this.stopAutoReconnect()
+    this._reconnectTimer = setInterval(() => {
+      if (!this.globalData.serverUrl) return
+      const wasConnected = this.globalData.wsConnected
+      this.checkServerHealth().then((connected) => {
+        if (!wasConnected && connected) {
+          console.log('🔄 服务器重连成功')
+        }
+      })
+    }, this.globalData.wsConnected ? 30000 : 5000)
+  },
+
+  stopAutoReconnect() {
+    if (this._reconnectTimer) {
+      clearInterval(this._reconnectTimer)
+      this._reconnectTimer = null
+    }
+  },
+
+  /**
+   * 全局请求方法，自动注入 API Key、处理 401、连接失败自动重试
+   * 用法：app.request({...}) 替代 wx.request({...})
+   * @param {object} options - wx.request 参数
+   * @param {number} _retryCount - 内部使用，当前重试次数
+   */
+  request(options, _retryCount = 0) {
+    const MAX_RETRY = 1  // 最多重试 1 次（共 2 次尝试），对普通请求够用
     const header = options.header || {}
     // 自动添加 API Key
     if (!header['X-API-Key'] && this.globalData.apiKey) {
@@ -64,6 +98,10 @@ App({
     // 包装 success 回调，统一处理 401
     const originalSuccess = options.success
     const wrappedSuccess = (res) => {
+      // 请求成功说明服务器可达，更新连接状态
+      if (res.statusCode !== 401) {
+        this.globalData.wsConnected = true
+      }
       if (res.statusCode === 401) {
         wx.showModal({
           title: '认证失败',
@@ -82,10 +120,40 @@ App({
       }
     }
 
+    // 包装 fail 回调，连接错误自动重试
+    const originalFail = options.fail
+    const wrappedFail = (error) => {
+      const errMsg = (error.errMsg || '').toLowerCase()
+      const isConnectionError = errMsg.includes('refused') ||
+                                errMsg.includes('timeout') ||
+                                errMsg.includes('fail')
+
+      if (isConnectionError && _retryCount < MAX_RETRY) {
+        const delay = (_retryCount + 1) * 2000
+        console.log(`🔄 请求失败，${delay/1000}秒后重试 (${_retryCount + 1}/${MAX_RETRY})`)
+        this.globalData.wsConnected = false
+        // 加速重连检测
+        this.startAutoReconnect()
+        setTimeout(() => {
+          this.request(
+            { ...options, header, success: originalSuccess, fail: originalFail },
+            _retryCount + 1
+          )
+        }, delay)
+        return
+      }
+
+      // 重试用尽，标记断开
+      this.globalData.wsConnected = false
+      this.startAutoReconnect()
+      if (originalFail) originalFail(error)
+    }
+
     return wx.request({
       ...options,
       header,
-      success: wrappedSuccess
+      success: wrappedSuccess,
+      fail: wrappedFail
     })
   },
 
@@ -124,7 +192,9 @@ App({
         timeout: 5000,
         success: (res) => {
           if (res.statusCode === 200 && res.data && res.data.status === 'ok') {
-            console.log('✅ 服务器连接正常')
+            if (!this.globalData.wsConnected) {
+              console.log('✅ 服务器连接恢复')
+            }
             this.globalData.wsConnected = true
             resolve(true)
           } else {
@@ -134,7 +204,9 @@ App({
           }
         },
         fail: (error) => {
-          console.error('❌ 服务器连接失败:', error)
+          if (this.globalData.wsConnected) {
+            console.error('❌ 服务器连接断开:', error.errMsg)
+          }
           this.globalData.wsConnected = false
           resolve(false)
         }

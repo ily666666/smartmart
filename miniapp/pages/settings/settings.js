@@ -14,6 +14,8 @@ Page({
     apiKey: '',
     inputApiKey: '',
     authRequired: false, // 服务器是否要求密码
+    // 编辑模式：已保存过配置则默认只读，点"修改"才可编辑
+    editing: false,
 
     // 桌面端同步（可选）
     wsConnected: false,
@@ -28,13 +30,15 @@ Page({
 
   onLoad() {
     const apiKey = wx.getStorageSync('apiKey') || ''
+    const hasSaved = !!app.globalData.serverUrl
     this.setData({
       serverUrl: app.globalData.serverUrl,
       inputServerUrl: app.globalData.serverUrl,
       serverConnected: app.globalData.wsConnected,
       deviceId: app.globalData.deviceId,
       apiKey: apiKey,
-      inputApiKey: apiKey
+      inputApiKey: apiKey,
+      editing: !hasSaved  // 没保存过配置时直接进入编辑模式
     })
   },
 
@@ -53,6 +57,24 @@ Page({
   },
 
   // ========== 服务器配置 ==========
+
+  // 进入编辑模式
+  enterEditMode() {
+    this.setData({
+      editing: true,
+      inputServerUrl: this.data.serverUrl,
+      inputApiKey: this.data.apiKey
+    })
+  },
+
+  // 取消编辑
+  cancelEdit() {
+    this.setData({
+      editing: false,
+      inputServerUrl: this.data.serverUrl,
+      inputApiKey: this.data.apiKey
+    })
+  },
 
   // 输入服务器地址
   onServerUrlInput(e) {
@@ -172,7 +194,12 @@ Page({
     app.globalData.serverUrl = url
     app.globalData.apiKey = apiKey
 
-    this.setData({ serverUrl: url, apiKey: apiKey })
+    this.setData({ serverUrl: url, apiKey: apiKey, editing: false })
+
+    // 启动自动重连
+    if (app.startAutoReconnect) {
+      app.startAutoReconnect()
+    }
 
     // 自动测试连接
     this.testConnection().then(() => {
@@ -215,7 +242,8 @@ Page({
             inputApiKey: '',
             serverConnected: false,
             wsConnected: false,
-            authRequired: false
+            authRequired: false,
+            editing: true  // 清除后进入编辑模式，方便重新配置
           })
 
           wx.showToast({ title: '已清除', icon: 'success' })

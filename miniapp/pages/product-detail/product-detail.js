@@ -558,8 +558,15 @@ Page({
         
         if (res.statusCode === 200) {
           wx.showToast({ title: '保存成功', icon: 'success' })
-          this.setData({ mode: 'view' })
+          this.setData({ 
+            mode: 'view',
+            tempImagePath: '',
+            uploadedImageUrl: '',
+            imageBase64: ''
+          })
           wx.setNavigationBarTitle({ title: '商品详情' })
+          // 重新加载商品数据和图片，确保页面立即显示最新内容
+          this.loadProduct(productId)
         } else {
           throw new Error(res.data?.detail || '保存失败')
         }

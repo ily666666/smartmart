@@ -7,58 +7,81 @@
       <text>服务器配置</text>
     </view>
     <view class="card">
-      <view class="form-group">
-        <text class="label">服务器地址</text>
-        <input
-          class="input"
-          type="text"
-          value="{{inputServerUrl}}"
-          placeholder="例: example.oicp.net:12345"
-          bindinput="onServerUrlInput"
-        />
-        <text class="hint">支持域名或IP地址，如花生壳映射地址</text>
-      </view>
-
-      <view class="form-group">
-        <text class="label">连接密码 {{authRequired ? '（必填）' : '（如已设置）'}}</text>
-        <input
-          class="input"
-          type="text"
-          password="{{true}}"
-          value="{{inputApiKey}}"
-          placeholder="输入服务器连接密码"
-          bindinput="onApiKeyInput"
-        />
-        <text class="hint">在服务器后台设置的 API 连接密码，防止他人访问</text>
-      </view>
-
-      <view class="btn-row">
-        <view class="btn-test {{testing ? 'loading' : ''}}" bindtap="testConnection">
-          <text>{{testing ? '测试中...' : '测试连接'}}</text>
-        </view>
-        <view class="btn-save" bindtap="saveServerUrl">
-          <text>保存</text>
-        </view>
-      </view>
-
-      <!-- 连接状态 -->
-      <view class="conn-result" wx:if="{{serverUrl}}">
-        <view class="conn-row">
-          <text class="conn-label">当前服务器</text>
-          <text class="conn-value">{{serverUrl}}</text>
-        </view>
-        <view class="conn-row">
-          <text class="conn-label">连接状态</text>
-          <view class="conn-status-badge {{serverConnected ? 'ok' : 'fail'}}">
-            <view class="status-dot"></view>
-            <text>{{serverConnected ? '已连接' : '未连接'}}</text>
+      <!-- ===== 已保存 · 只读展示 ===== -->
+      <block wx:if="{{serverUrl && !editing}}">
+        <view class="conn-result">
+          <view class="conn-row">
+            <text class="conn-label">服务器地址</text>
+            <text class="conn-value">{{serverUrl}}</text>
+          </view>
+          <view class="conn-row">
+            <text class="conn-label">连接密码</text>
+            <text class="conn-value">{{apiKey ? '••••••••' : '未设置'}}</text>
+          </view>
+          <view class="conn-row">
+            <text class="conn-label">连接状态</text>
+            <view class="conn-status-badge {{serverConnected ? 'ok' : 'fail'}}">
+              <view class="status-dot"></view>
+              <text>{{serverConnected ? '已连接' : '未连接'}}</text>
+            </view>
           </view>
         </view>
-      </view>
+        
+        <view class="btn-row">
+          <view class="btn-test {{testing ? 'loading' : ''}}" bindtap="testConnection">
+            <text>{{testing ? '测试中...' : '测试连接'}}</text>
+          </view>
+          <view class="btn-edit" bindtap="enterEditMode">
+            <text>修改配置</text>
+          </view>
+        </view>
 
-      <view class="clear-config" wx:if="{{serverUrl}}" bindtap="clearServerConfig">
-        <text>清除服务器配置</text>
-      </view>
+        <view class="clear-config" bindtap="clearServerConfig">
+          <text>清除服务器配置</text>
+        </view>
+      </block>
+
+      <!-- ===== 编辑模式 ===== -->
+      <block wx:if="{{!serverUrl || editing}}">
+        <view class="form-group">
+          <text class="label">服务器地址</text>
+          <input
+            class="input"
+            type="text"
+            value="{{inputServerUrl}}"
+            placeholder="例: example.oicp.net:12345"
+            bindinput="onServerUrlInput"
+          />
+          <text class="hint">支持域名或IP地址，如花生壳映射地址</text>
+        </view>
+
+        <view class="form-group">
+          <text class="label">连接密码 {{authRequired ? '（必填）' : '（如已设置）'}}</text>
+          <input
+            class="input"
+            type="text"
+            password="{{true}}"
+            value="{{inputApiKey}}"
+            placeholder="输入服务器连接密码"
+            bindinput="onApiKeyInput"
+          />
+          <text class="hint">在服务器后台设置的 API 连接密码，防止他人访问</text>
+        </view>
+
+        <view class="btn-row">
+          <view class="btn-test {{testing ? 'loading' : ''}}" bindtap="testConnection">
+            <text>{{testing ? '测试中...' : '测试连接'}}</text>
+          </view>
+          <view class="btn-save" bindtap="saveServerUrl">
+            <text>保存</text>
+          </view>
+        </view>
+
+        <!-- 已有配置时显示取消按钮 -->
+        <view class="cancel-edit" wx:if="{{serverUrl}}" bindtap="cancelEdit">
+          <text>取消修改</text>
+        </view>
+      </block>
     </view>
   </view>
 

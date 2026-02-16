@@ -115,9 +115,8 @@
     <view class="samples-list">
       <view 
         class="sample-card {{item.status}} {{expandedId === item.sku_id ? 'expanded' : ''}}"
-        wx:for="{{samples}}"
+        wx:for="{{filteredSamples}}"
         wx:key="sku_id"
-        wx:if="{{(statusFilter === 'all' || item.status === statusFilter) && (!searchText || item.name.toLowerCase().indexOf(searchText.toLowerCase()) > -1 || item.barcode.indexOf(searchText) > -1)}}"
       >
         <!-- 商品信息行 -->
         <view class="sample-item" data-id="{{item.sku_id}}" bindtap="toggleExpand">
@@ -150,15 +149,16 @@
               wx:for-index="imgIdx"
               wx:key="imgIdx"
             >
-              <!-- 优先使用 base64， 显示图片 -->
+              <!-- 优先使用已下载的临时文件路径 -->
               <image 
                 class="sample-image"
-                src="{{item.imagesBase64[img] || (apiUrl + '/api/samples/samples/' + item.sku_id + '/images/' + img)}}"
+                src="{{item.imageTempPaths[img] || ''}}"
                 mode="aspectFill"
                 data-sku="{{item.sku_id}}"
                 data-images="{{item.images}}"
                 data-index="{{imgIdx}}"
                 bindtap="previewImage"
+                lazy-load
               />
               <view 
                 class="delete-image-btn"
@@ -167,7 +167,7 @@
                 catchtap="deleteImage"
               >×</view>
               <!-- 加载中提示 -->
-              <view class="image-loading" wx:if="{{!item.imagesBase64[img]}}">
+              <view class="image-loading" wx:if="{{!item.imageTempPaths[img]}}">
                 <text>加载中...</text>
               </view>
             </view>
@@ -183,6 +183,12 @@
     <view class="empty-state" wx:if="{{samples.length === 0}}">
       <text class="empty-icon">📷</text>
       <text class="empty-text">暂无商品</text>
+    </view>
+    
+    <!-- 搜索无结果 -->
+    <view class="empty-state" wx:if="{{samples.length > 0 && filteredSamples.length === 0}}">
+      <text class="empty-icon">🔍</text>
+      <text class="empty-text">未找到匹配的商品</text>
     </view>
 
     <!-- 使用说明 -->

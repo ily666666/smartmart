@@ -7,6 +7,7 @@ Page({
   data: {
     loading: true,
     samples: [],
+    filteredSamples: [],  // 搜索/筛选后的列表（WXML 直接用这个渲染）
     indexStatus: null,
     buildProgress: { status: 'idle', message: '', progress: 0 },
     // 筛选
@@ -88,6 +89,7 @@ Page({
         }
         
         this.setData({ samples, stats })
+        this.applyFilter()
       }
     } catch (error) {
       console.error('加载样本失败:', error)
@@ -146,24 +148,33 @@ Page({
   // 搜索
   onSearchInput(e) {
     this.setData({ searchText: e.detail.value })
+    this.applyFilter()
   },
 
   // 筛选状态
   setStatusFilter(e) {
     const filter = e.currentTarget.dataset.filter
     this.setData({ statusFilter: filter })
+    this.applyFilter()
   },
 
-  // 获取过滤后的样本列表
-  getFilteredSamples() {
+  /**
+   * 在 JS 中计算过滤后的样本列表（WXML 不支持 .toLowerCase() 等方法调用）
+   * 每次搜索词或筛选条件变化时调用
+   */
+  applyFilter() {
     const { samples, searchText, statusFilter } = this.data
-    return samples.filter(s => {
-      const matchSearch = !searchText || 
-        s.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    const keyword = (searchText || '').toLowerCase()
+    
+    const filteredSamples = samples.filter(s => {
+      const matchSearch = !keyword || 
+        s.name.toLowerCase().includes(keyword) ||
         s.barcode.includes(searchText)
       const matchStatus = statusFilter === 'all' || s.status === statusFilter
       return matchSearch && matchStatus
     })
+    
+    this.setData({ filteredSamples })
   },
 
   // 选择商品上传图片
@@ -281,55 +292,66 @@ Page({
     const newExpandedId = this.data.expandedId === id ? null : id
     this.setData({ expandedId: newExpandedId })
     
-    // 展开时加载图片的 base64
+    // 展开时并行下载图片
     if (newExpandedId) {
-      this.loadImagesBase64(newExpandedId)
+      this.loadImagesTempPaths(newExpandedId)
     }
   },
 
-  // 加载图片的 base64（ 显示图片）
-  async loadImagesBase64(skuId) {
+  /**
+   * 并行下载图片到临时文件（比 base64 快得多）
+   * 使用 wx.downloadFile 并行下载，拿到临时路径直接显示
+   */
+  async loadImagesTempPaths(skuId) {
     const { samples, apiUrl } = this.data
     const sample = samples.find(s => s.sku_id === skuId)
     if (!sample || !sample.images || sample.images.length === 0) return
     
-    // 检查是否已经加载过
-    if (sample.imagesBase64) return
+    // 已加载过则跳过
+    if (sample.imageTempPaths) return
     
-    const imagesBase64 = {}
-    
-    for (const img of sample.images) {
-      try {
-        const res = await new Promise((resolve, reject) => {
-          app.request({
-            url: `${apiUrl}/api/samples/samples/${skuId}/images/${img}`,
-            responseType: 'arraybuffer',
-            success: resolve,
-            fail: reject
-          })
-        })
-        
-        if (res.statusCode === 200) {
-          const base64 = wx.arrayBufferToBase64(res.data)
-          // 根据文件扩展名判断类型
-          const ext = img.split('.').pop().toLowerCase()
-          const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg'
-          imagesBase64[img] = `data:${mimeType};base64,${base64}`
-        }
-      } catch (err) {
-        console.error('加载图片失败:', img, err)
-      }
+    // 构建认证头
+    const header = {}
+    if (app.globalData.apiKey) {
+      header['X-API-Key'] = app.globalData.apiKey
     }
     
-    // 更新对应商品的 base64 数据
+    // 并行下载所有图片
+    const downloadTasks = sample.images.map(img => {
+      return new Promise((resolve) => {
+        wx.downloadFile({
+          url: `${apiUrl}/api/samples/samples/${skuId}/images/${img}`,
+          header,
+          success: (res) => {
+            if (res.statusCode === 200) {
+              resolve({ img, path: res.tempFilePath })
+            } else {
+              resolve({ img, path: '' })
+            }
+          },
+          fail: () => resolve({ img, path: '' })
+        })
+      })
+    })
+    
+    const results = await Promise.all(downloadTasks)
+    
+    // 构建 { 文件名: 临时路径 } 映射
+    const imageTempPaths = {}
+    results.forEach(r => {
+      if (r.path) imageTempPaths[r.img] = r.path
+    })
+    
+    // 更新数据
     const newSamples = samples.map(s => {
       if (s.sku_id === skuId) {
-        return { ...s, imagesBase64 }
+        return { ...s, imageTempPaths }
       }
       return s
     })
     
     this.setData({ samples: newSamples })
+    this.applyFilter()
   },
 
   // 预览图片

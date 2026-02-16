@@ -765,3 +765,58 @@ async def create_product(
         "sample_synced": sample_synced,
     }
 
+
+@router.post("/sync_images_to_samples")
+async def sync_all_images_to_samples(db: Session = Depends(get_db)):
+    """
+    一键将所有已有商品图片同步到 AI 样本目录
+    
+    扫描所有有图片的商品，将商品图片复制到对应的 AI 样本目录中。
+    已经同步过的（样本目录中已有 product_img.*）会自动跳过，不会重复。
+    """
+    products = db.query(Product).filter(Product.image_url.isnot(None)).all()
+    
+    synced = []
+    skipped = []
+    failed = []
+    
+    image_exts = {'.jpg', '.jpeg', '.png', '.bmp', '.webp'}
+    
+    for product in products:
+        # 检查样本目录中是否已有 product_img.*（已同步过则跳过）
+        samples_dir = Path(settings.SAMPLES_DIR) / f"sku_{product.id:03d}"
+        already_synced = False
+        if samples_dir.exists():
+            for f in samples_dir.iterdir():
+                if f.stem == "product_img" and f.suffix.lower() in image_exts:
+                    already_synced = True
+                    break
+        
+        if already_synced:
+            skipped.append({"sku_id": product.id, "name": product.name})
+            continue
+        
+        # 找到商品图片文件
+        image_filename = os.path.basename(product.image_url)
+        image_file_path = IMAGES_DIR / image_filename
+        
+        if not image_file_path.exists():
+            failed.append({"sku_id": product.id, "name": product.name, "reason": "图片文件不存在"})
+            continue
+        
+        # 同步
+        if _sync_image_to_samples(product.id, image_file_path):
+            synced.append({"sku_id": product.id, "name": product.name})
+        else:
+            failed.append({"sku_id": product.id, "name": product.name, "reason": "复制失败"})
+    
+    return {
+        "message": f"同步完成：成功 {len(synced)} 个，跳过 {len(skipped)} 个，失败 {len(failed)} 个",
+        "synced_count": len(synced),
+        "skipped_count": len(skipped),
+        "failed_count": len(failed),
+        "synced": synced,
+        "skipped": skipped,
+        "failed": failed
+    }
+

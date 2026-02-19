@@ -75,6 +75,12 @@
       </view>
     </view>
 
+    <!-- 手动添加按钮 -->
+    <view class="manual-add-btn" bindtap="openManualAdd">
+      <text class="manual-add-icon">✏️</text>
+      <text class="manual-add-label">手动添加</text>
+    </view>
+
     <!-- 添加成功提示 -->
     <view class="add-toast" wx:if="{{lastAddedItem}}">
       <text>✅ {{lastAddedItem}}</text>
@@ -91,7 +97,7 @@
 
     <!-- 购物车列表 -->
     <scroll-view class="cart-list" scroll-y wx:if="{{cartItems.length > 0}}">
-      <view class="cart-item" wx:for="{{cartItems}}" wx:key="id">
+      <view class="cart-item" wx:for="{{cartItems}}" wx:key="barcode">
         <view class="item-info">
           <text class="item-name">{{item.name}}</text>
           <text class="item-barcode">{{item.barcode}}</text>
@@ -136,6 +142,45 @@
       bindtap="checkout"
     >
       <text>{{checkingOut ? '结账中...' : '结账'}}</text>
+    </view>
+  </view>
+
+  <!-- 手动添加商品弹窗 -->
+  <view class="manual-add-overlay" wx:if="{{showManualAdd}}" bindtap="closeManualAdd">
+    <view class="manual-add-card" catchtap="noop">
+      <view class="manual-add-header">
+        <text class="manual-add-title">手动添加商品</text>
+        <text class="manual-add-close" bindtap="closeManualAdd">✕</text>
+      </view>
+
+      <view class="manual-add-form">
+        <view class="form-item">
+          <text class="form-label">商品名称</text>
+          <input
+            class="form-input"
+            placeholder="如：鸡蛋、苹果（选填，默认称重商品）"
+            value="{{manualName}}"
+            bindinput="onManualNameInput"
+          />
+        </view>
+        <view class="form-item">
+          <text class="form-label">金额（元）</text>
+          <input
+            class="form-input price-input"
+            type="digit"
+            placeholder="请输入金额"
+            value="{{manualPrice}}"
+            bindinput="onManualPriceInput"
+            bindconfirm="confirmManualAdd"
+            focus="{{showManualAdd}}"
+          />
+        </view>
+      </view>
+
+      <view class="manual-add-actions">
+        <view class="btn-cancel" bindtap="closeManualAdd">取消</view>
+        <view class="btn-confirm" bindtap="confirmManualAdd">添加到购物车</view>
+      </view>
     </view>
   </view>
 

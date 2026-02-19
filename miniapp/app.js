@@ -219,6 +219,7 @@ App({
     apiKey: '',           // 连接密码（API Key）
     deviceId: '',         // 设备ID
     wsConnected: false,   // 服务器连接状态（true = 服务器可达）
-    socketTask: null      // WebSocket 实例（桌面端同步用，可选）
+    socketTask: null,     // WebSocket 实例（桌面端同步用，可选）
+    revokeCartItems: null // 撤销订单恢复的商品（跨页面传递）
   }
 })

@@ -568,8 +568,8 @@ Page({
           wx.setNavigationBarTitle({ title: '商品详情' })
           // 重新加载商品数据和图片，确保页面立即显示最新内容
           this.loadProduct(productId)
-          // 通知商品列表页返回时刷新
-          this._notifyListRefresh()
+          // 就地更新列表中这一条商品，保持滚动位置
+          this._notifyListUpdate(productId)
         } else {
           throw new Error(res.data?.detail || '保存失败')
         }
@@ -607,13 +607,21 @@ Page({
     }
   },
 
-  // 通知商品列表页需要刷新（编辑/删除后返回时自动刷新）
+  // 通知商品列表页需要全量刷新（添加/删除商品后）
   _notifyListRefresh() {
     const pages = getCurrentPages()
-    // 上一页就是商品列表页
     const listPage = pages[pages.length - 2]
     if (listPage && listPage.markNeedRefresh) {
       listPage.markNeedRefresh()
+    }
+  },
+
+  // 通知商品列表页就地更新某个商品（编辑保存后，不重载列表，保持滚动位置）
+  _notifyListUpdate(productId) {
+    const pages = getCurrentPages()
+    const listPage = pages[pages.length - 2]
+    if (listPage && listPage.updateProductInList) {
+      listPage.updateProductInList(productId)
     }
   },
 

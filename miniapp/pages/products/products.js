@@ -24,11 +24,59 @@ Page({
   _needRefresh: true,
 
   /**
-   * 供详情页调用：标记列表需要刷新
-   * 在详情页编辑/删除商品后调用，返回列表时自动刷新
+   * 供详情页调用：标记列表需要刷新（用于添加/删除商品）
    */
   markNeedRefresh() {
     this._needRefresh = true
+  },
+
+  /**
+   * 供详情页调用：就地更新列表中的某个商品（用于编辑商品）
+   * 只更新那一条数据，不重载整个列表，保持滚动位置
+   */
+  async updateProductInList(productId) {
+    try {
+      const apiUrl = getApiUrl(app.globalData.serverUrl)
+      const res = await new Promise((resolve, reject) => {
+        app.request({
+          url: `${apiUrl}/products/${productId}`,
+          method: 'GET',
+          success: resolve,
+          fail: reject
+        })
+      })
+
+      if (res.statusCode === 200) {
+        const item = res.data
+        const updatedProduct = {
+          id: item.sku_id || item.id,
+          barcode: item.barcode,
+          name: item.name,
+          category: item.category || '其他',
+          price: item.price,
+          cost_price: item.cost_price,
+          stock: item.stock,
+          image_url: item.image_url ? (item.image_url.startsWith('http') ? item.image_url : `${apiUrl}${item.image_url}`) : '',
+          imageBase64: ''
+        }
+
+        const products = this.data.products.map(p => {
+          if (p.id === parseInt(productId)) {
+            return updatedProduct
+          }
+          return p
+        })
+
+        this.setData({ products })
+
+        // 重新加载这一个商品的图片
+        if (updatedProduct.image_url) {
+          this.loadProductImagesBase64([updatedProduct])
+        }
+      }
+    } catch (err) {
+      console.error('更新单个商品失败:', err)
+    }
   },
 
   onLoad() {

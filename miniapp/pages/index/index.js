@@ -21,7 +21,11 @@ Page({
     // 结账
     checkingOut: false,
     // 最后添加的商品（用于提示）
-    lastAddedItem: null
+    lastAddedItem: null,
+    // 手动添加商品弹窗
+    showManualAdd: false,
+    manualName: '',
+    manualPrice: ''
   },
 
   // 持续扫码：防重复
@@ -51,6 +55,9 @@ Page({
         this.setData({ serverConnected: connected })
       })
     }
+
+    // 兜底：onShow 时也检查一次（主逻辑在 order-detail switchTab 回调中直接调用）
+    this.restoreRevokedItems()
   },
 
   onHide() {
@@ -278,8 +285,10 @@ Page({
 
   // 增加数量
   increaseQty(e) {
-    const index = e.currentTarget.dataset.index
+    const index = parseInt(e.currentTarget.dataset.index)
     const cartItems = [...this.data.cartItems]
+    if (index < 0 || index >= cartItems.length || !cartItems[index]) return
+
     cartItems[index].quantity += 1
     cartItems[index].subtotal = parseFloat((cartItems[index].price * cartItems[index].quantity).toFixed(2))
     this.updateCart(cartItems)
@@ -287,12 +296,15 @@ Page({
 
   // 减少数量
   decreaseQty(e) {
-    const index = e.currentTarget.dataset.index
+    const index = parseInt(e.currentTarget.dataset.index)
     const cartItems = [...this.data.cartItems]
+    if (index < 0 || index >= cartItems.length || !cartItems[index]) return
 
     if (cartItems[index].quantity <= 1) {
-      // 数量为1时再减就删除
-      this.removeItem(e)
+      const itemName = cartItems[index].name || '商品'
+      cartItems.splice(index, 1)
+      this.updateCart(cartItems)
+      wx.showToast({ title: `已移除 ${itemName}`, icon: 'none', duration: 1000 })
       return
     }
 
@@ -303,9 +315,11 @@ Page({
 
   // 删除商品
   removeItem(e) {
-    const index = e.currentTarget.dataset.index
+    const index = parseInt(e.currentTarget.dataset.index)
     const cartItems = [...this.data.cartItems]
-    const itemName = cartItems[index].name
+    if (index < 0 || index >= cartItems.length || !cartItems[index]) return
+
+    const itemName = cartItems[index].name || '商品'
     cartItems.splice(index, 1)
     this.updateCart(cartItems)
     wx.showToast({ title: `已移除 ${itemName}`, icon: 'none', duration: 1000 })
@@ -424,6 +438,113 @@ Page({
     } finally {
       this.setData({ checkingOut: false })
     }
+  },
+
+  // 空操作，阻止事件冒泡
+  noop() {},
+
+  // ========== 手动添加商品 ==========
+
+  // 打开手动添加弹窗
+  openManualAdd() {
+    this.setData({
+      showManualAdd: true,
+      manualName: '',
+      manualPrice: ''
+    })
+  },
+
+  // 关闭手动添加弹窗
+  closeManualAdd() {
+    this.setData({
+      showManualAdd: false,
+      manualName: '',
+      manualPrice: ''
+    })
+  },
+
+  // 手动添加：名称输入
+  onManualNameInput(e) {
+    this.setData({ manualName: e.detail.value })
+  },
+
+  // 手动添加：价格输入
+  onManualPriceInput(e) {
+    this.setData({ manualPrice: e.detail.value })
+  },
+
+  // 确认手动添加
+  confirmManualAdd() {
+    const price = parseFloat(this.data.manualPrice)
+    if (isNaN(price) || price <= 0) {
+      wx.showToast({ title: '请输入有效价格', icon: 'none' })
+      return
+    }
+
+    const name = this.data.manualName.trim() || '称重商品'
+    const uniqueBarcode = `manual_${Date.now()}`
+
+    const product = {
+      sku_id: 0,
+      barcode: uniqueBarcode,
+      name: name,
+      price: price
+    }
+
+    this.addToCart(product)
+    this.closeManualAdd()
+  },
+
+  // ========== 撤销订单恢复 ==========
+
+  // 从 globalData 或 storage 中读取撤销的商品并加入购物车（公开方法，供外部页面直接调用）
+  restoreRevokedItems() {
+    // 双重读取：优先 globalData，备选 storage
+    let items = app.globalData.revokeCartItems
+    if (!items || !items.length) {
+      try {
+        items = wx.getStorageSync('revoke_cart_items')
+      } catch (e) { /* ignore */ }
+    }
+
+    if (!items || !items.length) return
+
+    // 立即清除两处，防止重复恢复
+    app.globalData.revokeCartItems = null
+    try { wx.removeStorageSync('revoke_cart_items') } catch (e) { /* ignore */ }
+
+    console.log('[收银台] 恢复撤销商品:', JSON.stringify(items))
+
+    // 构建新购物车数据
+    const newCartItems = items.map(item => {
+      const price = parseFloat(item.price) || 0
+      const quantity = parseInt(item.quantity) || 1
+      return {
+        id: item.product_id || 0,
+        barcode: item.barcode || `manual_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        name: item.name || item.product_name || '商品',
+        price: price,
+        quantity: quantity,
+        subtotal: parseFloat((price * quantity).toFixed(2))
+      }
+    })
+
+    // 延迟 setData，确保页面切换动画完成后数据才写入（switchTab 期间 setData 可能被吞）
+    setTimeout(() => {
+      const cartItems = [...this.data.cartItems, ...newCartItems]
+      const totalAmount = parseFloat(cartItems.reduce((sum, c) => sum + c.subtotal, 0).toFixed(2))
+      const totalItems = cartItems.reduce((sum, c) => sum + c.quantity, 0)
+
+      console.log('[收银台] setData 写入购物车:', cartItems.length, '种商品')
+
+      this.setData({ cartItems, totalAmount, totalItems })
+
+      wx.showToast({
+        title: `已恢复 ${totalItems} 件商品`,
+        icon: 'success',
+        duration: 2000
+      })
+    }, 500)
   },
 
   // ========== 工具方法 ==========
